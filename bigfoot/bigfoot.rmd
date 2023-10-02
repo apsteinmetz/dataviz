@@ -1,0 +1,288 @@
+---
+title: "Bigfoot Sightings"
+output: html_notebook
+---
+A couple years ago I was first introduced to choropleth maps in R by [this](http://www.joshuastevens.net/visualization/squatch-watch-92-years-of-bigfoot-sightings-in-us-and-canada/) beautiful visualization of bigfoot sightings by Joshua Stevens. As a way to learn the basics of Shiny web apps I developed an animated timeline of bigfoot sightings which you can see [here.](https://viztoy.shinyapps.io/bigfoot/)
+
+During this process I was struck by many disparate approaches there are in R to create maps.  More recently I've seen some developments that bring yet another but more coherent approach.  I thought I'd revist my bigfoot map using this new approach.  If you've worked with GIS data you've probably imported ESRI shapefiles.  The common tools used in R create, IMHO, an unholy mess of a data structure.  I was thrilled to see the release of the `sf` package which brings shapefiles into R in a very "tidyverse" way.  Further ggplot2 is being enhanced to handle these data structures directly, opening the way for very complicated GIS manipulations in very few lines of clearly readable code.
+
+
+Load packages.
+```{r message=FALSE, warning=FALSE}
+#devtools::install_github("r-spatial/sf")
+library(tidyverse)
+library(broom)
+library(lubridate)
+library(ggplot2)
+library(ggmap)
+library(sf)
+library(choroplethr)
+library(choroplethrMaps)
+library(maps)
+library(magick)
+library(plotly)
+library(xml2)
+
+```
+Download the bigfoot sighting reports from BFRO.net, the Bigfoot Research Organization.  They are in Google Earth KML format [here](http://www.bfro.net/app/AllReportsKMZ.aspx).  The `st_read` function can handle KML format, unfortunately the organization of this particular KML file makes reading it difficult.  `st_read`  reads one "layer" at a time but this file treats every bigfoot sighting as a different layer.  Further complicating matters, there are many duplicate layer names and `st_read` will only read the first one it encounters. Finally, the examples shown in the XML tutorials assume nicely hiearchical data structures. This ain't that.  In the end is was more convenient to parse the KML file as an XML document by hand.
+
+Download and unzip to get KML file.
+
+```{r}
+#reports<-  st_read("reports.kml")
+
+download.file(url="http://www.bfro.net/app/AllReportsKMZ.aspx",destfile = "AllBFROReports.kmz",mode="wb")
+unzip("AllBFROReports.kmz",junkpaths = TRUE)
+
+# files from https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html put in gis directory
+state_file<-"http://www2.census.gov/geo/tiger/GENZ2016/shp/cb_2016_us_state_20m.zip"
+states_map_52<-download.file(state_file,"gis/state_polygons.zip",mode="wb")
+
+```
+
+Parse the xml.  Most sighting `<Folder>`s have two `<Placemark>` nodes. The second usually contains redundant information, timestamps, in particular.  Remove the redundant `<Placemark>` nodes first, then put the information we want in a data frame.
+```{r}
+kml<-read_xml("doc.kml")
+
+#remove unneeded Placemark nodes that might have give duplicate information.
+#Fancy xpath selector
+temp<-kml %>% xml_find_all(".//Folder/Placemark[name[contains(.,'Location Boundaries')]]") %>% 
+  xml_remove(free=TRUE) %>% 
+  {.}
+rm(temp)
+
+#extract the fields we want
+long<-xml_find_all(kml, ".//Folder/Placemark/LookAt/longitude") %>% 
+  xml_text() %>% 
+  as.numeric()
+lat<-xml_find_all(kml, ".//Folder/Placemark/LookAt/latitude") %>% 
+  xml_text() %>% 
+  as.numeric()
+class<-xml_find_all(kml, ".//Folder/Placemark/description/a") %>% 
+  xml_text() %>% str_replace("Class ","")
+report_id<-xml_find_all(kml, ".//Folder/Placemark/description/b") %>% 
+  xml_text() %>% 
+  str_replace("\n.*Report (\\d+).*","\\1")
+description<-xml_find_all(kml, ".//Folder/Placemark/description/b") %>% 
+  xml_text() %>% 
+  str_replace("\n.*Report (\\d+): (.*)","\\2")
+date<-xml_find_all(kml, ".//Folder/Placemark/TimeStamp/when") %>% 
+  xml_text() %>% 
+  as.Date()
+
+#create data frame. Remove obviously impossible times and coordinates.
+bfro_data<-data_frame(report_id,
+                      date,
+                      long,
+                      lat,
+                      class,
+                      description) %>% 
+  filter(date<Sys.Date()) %>%
+  filter(abs(lat<90),abs(long)<180)
+bfro_data
+
+```
+
+Since we only have lat/lon, not state info, we have to figure out what state each coordinate is in.  First we get an ESRI Shapefile that has a polygon vector for each state.
+```{r}
+
+startwd<-getwd()
+setwd("./gis")
+unzip("state_polygons.zip")
+setwd(startwd)
+
+
+#WORKING ON THIS
+#states_map_52<-st_read(dsn="gis/state_polygons.shp")
+states_map_52<-st_read(dsn="gis/cb_2016_us_state_20m.shp")
+
+
+states_map_cont<-states_map_52 %>% filter(!(STUSPS %in% c("PR","HI","AK")))
+```
+
+Assign states to the sightings.
+```{r}
+#make coordinates a simple feature
+bfro_data<-bfro_data %>% st_as_sf(coords=c("long","lat"))
+
+st_within(bfro_data$geometry,states_map_52$geometry)
+```
+
+
+
+The  `tidy`/`nest` functions let us extract the polygon data in a way we can use. First we extract the polygons, then assign a state name as `region` to each polygon vector.  Finally, we unnest the table so that each vertex has a state label assigned to it.
+  
+```{r}
+
+states_map<-states_map_cont %>% 
+  unnest()  %>% 
+  select(id,order,region,long,lat) %>% 
+  ungroup() %>% 
+  mutate(region=tolower(region)) %>% 
+  group_by(region)
+states_map
+#save(states_map,file="states_map.rdata")
+```
+
+Use `maps::map.where` to assign a state to the lat/long data in data set from we got from Kaggle. Clean up some odd regions.
+
+```{r}
+bfro_data<-bfro_data %>% 
+  mutate(region=map.where("state",bfro_data$long,bfro_data$lat)) %>% 
+  mutate(region=str_replace(region,":[a-z]+","")) %>% 
+  mutate(region=str_replace(region,"washington island","washington")) %>% 
+  filter(region != "puerto rico") %>% 
+  na.omit()
+```
+
+Finally, to clean up the data set we get the year from the time stamp and summarise the sighting counts by state, then by state and year.
+
+```{r}
+bfro_data<-bfro_data %>% 
+  mutate(Year=year(date)) %>% 
+  select(Year,region,everything()) %>% 
+  arrange(Year,region,report_id) %>% 
+  na.omit()
+state_sum<-bfro_data %>%  mutate(region=str_to_lower(region)) %>% group_by(region) %>% summarise(value=n())
+state_year_sum<-bfro_data  %>% mutate(region=str_to_lower(region)) %>% group_by(region,Year) %>% summarise(value=n())
+
+
+#fill in missing years and missing states with zero 
+state_list<-states_map %>% 
+  ungroup() %>% 
+  select(region) %>% 
+  unique() %>% 
+  filter(region != "Puerto Rico") %>% 
+  mutate(region=tolower(region))
+
+state_year_sum<-state_year_sum %>%
+  full_join(state_list) %>% 
+  complete(Year=full_seq(state_year_sum$Year,1),fill=list(value=0))
+
+state_sum<-state_sum %>%
+  full_join(state_list) %>% 
+  complete(region,fill=list(value=0))
+```
+Show a choropleth of all sighting frequencies by state
+```{r}
+
+gg<-state_choropleth(state_sum,num_colors = 1)+ggtitle("All Sighting Years")
+gg <- gg + scale_fill_distiller(name="Bigfoot\nSightings", palette="Greens",direction = 1)
+#gg<-ggplot()+geom_point(data=ungroup(bfro_data),aes(x=longitude,y=latitude))+coord_map()
+gg
+```
+
+If we want to make this chart more interactive we can use the plotly package which has a nice choropleth facility built in.
+
+```{r}
+df <- read.csv("https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv")
+df$hover <- with(df, paste(state, '<br>', "Beef", beef, "Dairy", dairy, "<br>",
+                           "Fruits", total.fruits, "Veggies", total.veggies,
+                           "<br>", "Wheat", wheat, "Corn", corn))
+# give state boundaries a white border
+l <- list(color = toRGB("white"), width = 2)
+# specify some map projection/options
+g <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('white')
+)
+
+p <- plot_geo(df, locationmode = 'USA-states') %>%
+  add_trace(
+    z = ~total.exports, text = ~hover, locations = ~code,
+    color = ~total.exports, colors = 'Purples'
+  ) %>%
+  colorbar(title = "Millions USD") %>%
+  layout(
+    title = '2011 US Agriculture Exports by State<br>(Hover for breakdown)',
+    geo = g
+  )
+p
+
+map_data("world") %>%
+  group_by(group) %>%
+  plot_geo(x = ~long, y = ~lat) %>%
+  add_markers(size = I(1))
+
+```
+Just use ggplot and maps
+```{r}
+#states <- states_map
+states<-as_data_frame(map_data("state"))
+state_sum<-state_sum %>% filter(region != "alaska")
+
+choro <- left_join(states, state_sum, by = "region") %>% 
+  group_by(region) %>% 
+  arrange(order)%>% 
+  filter(region != "alaska") %>% 
+  filter(region != "hawaii")
+
+ggplot(choro, aes(long, lat)) +
+  geom_polygon(aes(group = region, fill = value)) +
+ # coord_map("albers",  at0 = 45.5, lat1 = 29.5)
+  coord_map()+ scale_fill_distiller(name="Bigfoot\nSightings", palette="Greens",direction = 1)+theme_nothing(legend=TRUE)
+```
+
+
+Show a choropleth of all sighting frequencies for a particular year.
+```{r message=TRUE, warning=TRUE}
+thisYear<-year(Sys.Date())
+inputYr=2017
+maxSights<-max(state_year_sum$value)
+
+img <- image_graph(600, 400, res = 96)
+for(inputYr in startYear:thisYear){
+  gg<-state_year_sum %>% 
+    filter(Year==inputYr) %>% 
+    ungroup() %>% 
+    select(region,value) %>% 
+    state_choropleth(num_colors = 1)
+  
+  gg <- gg + scale_fill_distiller(name="Bigfoot\nSightings", 
+                                  palette="Greens",
+                                  direction = 1,
+                                  limits=c(0,maxSights))
+  gg<-gg + ggtitle(inputYr)
+  print(gg)
+}
+dev.off()
+img <- image_background(image_trim(img), 'white')
+#image_animate(img, fps = 2)
+animation <- image_animate(img, fps = 2)
+image_write(animation, path = "bigfoot_map.gif", format = "gif")
+
+```
+
+
+
+```{r}
+#timeline of all sightings  
+maxSights<-max(state_sum$value)
+startYear<-1970
+subsetYear<-state_year_sum %>% 
+  filter(Year>startYear,Year<thisYear+1) %>% 
+  group_by(Year) %>% 
+  summarize(Sightings=sum(value))
+p<-ggplot(data=subsetYear)
+p<-p+geom_col(aes(x=Year,y=Sightings),fill="darkgreen")+ggtitle("USA Bigfoot Sightings by Year")
+print(p)
+
+```
+
+```{r}
+#timeline of all sightings highlighting particular year  
+startYear<-1970
+inputYr<-2001
+thisYear<-year(Sys.Date())
+fills<-c(rep("lightgreen",inputYr-startYear-1),"darkgreen",rep("lightgreen",thisYear-inputYr))
+subsetYear<-state_year_sum %>% 
+  filter(Year>=startYear,Year<=thisYear) %>% 
+  group_by(Year) %>% 
+  summarize(Sightings=sum(value))
+p<-ggplot(data=subsetYear)
+p<-p+geom_col(aes(x=Year,y=Sightings),fill=(fills))
+print(p)
+
+```

@@ -1,0 +1,133 @@
+---
+title: "New Countries Win in New Sports"
+output: html_notebook
+---
+#New Countries Win in New Sports
+##Looking at Winter Olympic Medal Rankings by Vintage of Sport Introduction
+
+Norway is a tiny country that punches way above its weight in the Winter Olympic medal count.  We are not surprised as those folks are practically born on skis.  At the same time, toussle-haired surfer dudes and dudettes from the US seem to be all over the hill when snowboards are involved.  Notably, the sports where the US is most visible are sports which arose fairly recently.  Is there a pattern here?  Let's do a quick hit to see if we can visualize the dominance of countries, not by event, but by vintage of a sport's introduction to the games.
+
+```{r}
+library(tidyverse)
+library(rvest)
+```
+
+#Scrape and Clean the Data from the Web
+
+I chose to get the medal total by scraping the NBC site.  Doubtless you could find another source for this.  Making an error-proof run through the countries was like navigating slalom gates.  The code is simple now but, due to variations in the tables from country to country it took a  number of iterations to get this right.  Using the "Inspect" feature of Google Chrome really helped me here to extract the right pieces ("xpath selectors").
+
+By the time you see this the web site may have changed or disappeared.
+
+```{r}
+#get top medal countries. Countries with 10 or more medals in total
+URL_stub<-"http://www.nbcolympics.com/medals/"
+
+#the order of the countries is grouped by continent, then total medal count
+countries<-as_factor(c("Norway","Germany","Netherlands","Austria","Switzerland",
+                       "France","Sweden","Italy","olympic-athlete-russia",
+                       "south-korea","Japan",
+                       "united-states","Canada"))
+
+all_medals<-data_frame()
+for (country in countries){
+  print(country)
+  medals_raw<-read_html(paste0(URL_stub,country))
+  medals<-medals_raw %>% 
+    html_node(xpath="//table[@class='grid-table grid-table-2018']") %>% 
+    html_table() %>% .[,1:5] %>% 
+    mutate(Country=country) %>% 
+    # get rid of special chars
+    mutate(Sport=str_extract(Sport,"(\\w|\\-| )+")) %>%
+    select(Country,everything()) %>%
+    {.}
+  all_medals<-bind_rows(medals,all_medals)
+}
+save(all_medals,file="all_medals.rdata")
+
+```
+Now get the Wikipedia page that describes the first year an event was held. We are limiting ourselves to the broad class of sport.  There are many snowboarding events that were introduced in different years.  We are lumping all snowboard events together and using just the first year a snowboarding event was introduced. 
+
+Again, there is no guarantee that the Wikipedia page format won't change in the future.
+```{r}
+URL<-"https://en.wikipedia.org/wiki/Winter_Olympic_Games"
+wiki_page_raw<-read_html(URL)
+
+current_sports<-wiki_page_raw %>% 
+  html_node(xpath="//*[@id='mw-content-text']/div/table[3]") %>% 
+  html_table() %>% .[,1:4] %>% 
+  mutate(Years=str_extract(Years,"\\d{4}")) %>% 
+  rename(Notes=`Medal events contested in 2014`,Year=Years) %>% 
+  mutate(Notes=str_replace(Notes,"\\[\\d+\\]",""))
+
+save(current_sports,file="current_sports.rdata")
+
+
+```
+
+The names of the sports aren't exactly the same at both sites so align the names of the sports in both tables. 
+```{r message=FALSE, warning=FALSE}
+#we can get some better alignment by forcing case agreement
+all_medals<-all_medals %>% mutate(Sport=str_to_title(Sport))
+current_sports<-current_sports %>% mutate(Sport=str_to_title(Sport))
+
+#manually fix the four remaining problems
+current_sports<-current_sports %>% mutate(Sport=ifelse(Sport=="Short Track Speed Skating","Short Track",Sport))
+current_sports<-current_sports %>% mutate(Sport=ifelse(Sport=="Bobsleigh","Bobsled",Sport))
+current_sports<-current_sports %>% mutate(Sport=ifelse(Sport=="Ice Hockey","Hockey",Sport))
+current_sports<-current_sports %>% mutate(Sport=ifelse(Sport=="Cross-Country Skiing","Cross-Country",Sport))
+
+
+all_medals %>% select(Sport) %>% distinct() %>% left_join(current_sports) %>% arrange(Year)
+
+```
+
+Good!  It must be noted that we are working with tiny data here. If my boss asked me to do this I would just manually create all these tables, in the interest of time.  Here at OutsideRdata we do things, not the hard way, but the way that teaches us the most!
+
+The cleaning is done.  Now lets join the tables, make sure the countries are in the right order and add some observations using the oh-so-useful `complete` function to put zeros in the missing combinations of year and sport for every country.
+
+```{r message=FALSE, warning=FALSE}
+final_table <- all_medals %>%
+  select(Country,Sport,Total) %>% 
+  left_join(current_sports) %>% .[,1:4] 
+
+#make sure the order of the countries matches the order we started with
+final_table$Country <- as_factor(final_table$Country,levels=levels(countries))
+
+#fill empty cases with zero so there are no blanks in the plot
+final_table <- final_table %>% complete(Country,Sport,Year,fill=list(Total=0))
+
+agg_medals<-final_table %>% group_by(Country,Year) %>% 
+  summarize(Total=sum(Total)) 
+```
+##A Digression
+A best practice with tidy data is to have every observation and every variable in a single data table.  Where we want to use the data in a related table we use `_join` to add the data to the main table.  This runs contrary to best practice in the early days of PC databases where "relational" was a big part of data manipulation. The data tables were kept separate and linked by keys. Keys are still how `_join` works, of course, but we just make one humongous table rather than look up the related fields on the fly.  This is faster but uses more memory and/or storage. Back in the day when a couple megabytes of RAM was a lot, we cared about those things, even for small data projects.  Now, we use local million-row tables with nary a blink of the eye.  You kids don't know how tough it was!
+
+#Visualize
+```{r}
+agg_medals %>% ggplot(aes(Year,Country,fill=Total))+geom_tile()
+```
+
+We see some patterns emerging but this chart is mostly a reflection of the fact that most of the sports have been around since the beginning of the Winter games.  There are more medals to be won in those sports.  Let's normalize the data by the fraction of total medals in each vintage.  Also clean up the labels a bit.
+
+```{r message=FALSE, warning=FALSE}
+agg_medals<-agg_medals %>% 
+  group_by(Year) %>% 
+  mutate(Pct_That_Year=Total/sum(Total))
+
+agg_medals %>% 
+  ggplot(aes(Year,Country,fill=Pct_That_Year))+geom_tile()+
+  labs(title="New Countries Win in New Sports",
+       subtitle="Medal Ranking by Vintage of Sport",
+       x="Year Sport Introduced",
+       y="Country by Continent")+
+  geom_hline(yintercept = 2.5,size=2)+
+  geom_hline(yintercept = 4.5,size=2)
+```
+
+There you have it.  We clearly see that the U.S. and Canada come to the fore with the most recently introduced events. The schussing countries of Europe are a bit stronger in the older sports.  Note the intersection of Germany and 1964.  There was one sport inaugurated in 1964, luge. Likewise, in 1928 the only sport introduced was skeleton.  Some events, like skeleton, appeared, dissapeared then reappeared again (in the case of skeleton, 2002).  Biathalon is listed as a 1960 vintage sport - newish.  Cross-country skiing is half the event and the Norwegians are very strong, of course.  This shows the limitation of this analysis.
+
+It is strange that skeleton, bobsled and luge are broken out as separate sports while "Alpine Skiing" is just one. For the purposes of this analysis it doesn't affect the conclusions.
+
+If we wanted to take this further, a more robust analysis would use several Olympics to get a larger sample size but I have to move on to March Madness!
+
+
