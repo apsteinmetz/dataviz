@@ -7,6 +7,8 @@ library(lubridate)
 library(rnoaa)
 
 # Get Data ----------------------------------
+
+googlesheets4::gs4_deauth()
 wq_url <-
 "https://docs.google.com/spreadsheets/d/1813b2nagaxZ80xRfyMZNNKySZOitro5Nt7W4E9WNQDA/edit?usp=sharing"
 
@@ -26,12 +28,11 @@ wq_meta <- wq_meta_raw %>%
 
 
 data_names <- c("site","date","year","month","high_tide","sample_time","bacteria",
-                "precip_t-0","precip_t-1","precip_t-2","precip_t-3","precip_t-4",
-                "precip_t-5","precip_t-6","notes")
+                "precip_t0","precip_t1","precip_t2","precip_t3","precip_t4",
+                "precip_t5","precip_t6","notes")
 
-wq_data <- wq_data_raw
-names(wq_data) <- data_names
-wq_data <- wq_data %>%
+wq_data <- wq_data_raw |>
+  set_names(data_names) |>
   mutate(date = as_date(date)) %>%
   mutate(sample_time = hms::as_hms(sample_time)) %>%
   mutate(high_tide = hms::as_hms(high_tide)) %>%
@@ -44,6 +45,7 @@ wq_data <- wq_data %>%
   mutate(across(where(is.character), .fns = ~ str_replace(.x, "\\(.+\\)", ""))) %>%
   mutate(across(where(is.character), .fns = ~ na_if(.x, "N/A"))) %>%
   mutate(across(contains("precip"), as.numeric)) %>%
+  mutate(precip_wk = rowSums(select(., starts_with("precip")), na.rm = TRUE),.after="bacteria") |>
   mutate(bacteria = as.numeric(bacteria)) %>%
   mutate(notes = replace_na(notes, "")) %>%
   # fix some typos
@@ -56,6 +58,9 @@ wq_data <- wq_data %>%
   )) %>%
   mutate(site = as.factor(site))
 
+
+save(wq_data,file="data/wq_data.rdata")
+save(wq_meta,file="data/wq_meta.rdata")
 save(wq_data,file="data/wq_data.rdata")
 save(wq_meta,file="data/wq_meta.rdata")
 
@@ -63,6 +68,23 @@ save(wq_meta,file="data/wq_meta.rdata")
 load("data/wq_data.rdata")
 load("data/wq_meta.rdata")
 load("data/weather.rdata")
+
+weather <- weather |>
+  mutate(rain_7D = roll_sum(PRCP, 7, fill = NA, align = "right"))
+
+rain_comp <- wq_data |>
+  summarize(.by = date,precip_wk = mean(precip_wk,),precip = mean(precip_t0)) |>
+  left_join(weather)
+
+ggplot(rain_comp,aes(precip_wk,rain_7D)) + geom_point() +
+  labs(title = "Rainfall Comparison",
+       x = "Weekly Rainfall(in.) from CWQT Master Sheet",
+       y = "Weekly Rainfall(in.) from NOAA Central Park Station")
+
+ggplot(rain_comp,aes(precip,PRCP)) + geom_point() +
+  labs(title = "Rainfall Comparison",
+       x = "Daily Rainfall(in.) from CWQT Master Sheet",
+       y = "Daily Rainfall(in.) from NOAA Central Park Station")
 
 # precip_data <- wq_data %>%
 #   select(date,starts_with("precip")) %>%
@@ -79,14 +101,15 @@ bacteria_by_site <- wq_data %>%
   group_by(site) %>%
   summarise(bacteria = round(mean(bacteria,na.rm =TRUE)))
 
+bacteria_by_site %>%
+  #  filter(bacteria < 500) %>%
+  ggplot(aes(bacteria)) + geom_histogram()
+
 bacteria_by_site <- wq_data %>%
   group_by(site,quality) %>%
   tally()
 
 
-bacteria_by_site %>%
-#  filter(bacteria < 500) %>%
-  ggplot(aes(bacteria)) + geom_histogram()
 
 wq_data %>%
   filter(bacteria < 200) %>%
