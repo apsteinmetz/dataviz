@@ -99,3 +99,6 @@ if (UPDATE){
   }
   save(weather,file="data/weather.rdata")
 }
+
+# experimental tide data
+battery <- "USW08518750"
