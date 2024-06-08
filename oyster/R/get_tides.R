@@ -5,6 +5,7 @@ library(rnoaa)
 library(rvest)
 library(duckdb)
 library(duckplyr)
+library(arrow)
 
 # use duckdb for every tidyverse function
 methods_overwrite()
@@ -12,13 +13,44 @@ methods_overwrite()
 #  default station is the battery NYC
 battery <- "8518750"
 
+get_json_response <- function(url) {
+  response <- httr::GET(url) |>
+    httr::content("text") |>
+    jsonlite::fromJSON(simplifyDataFrame = TRUE)
+  # one level of error checking
+  # default to battery if no data
+  estimated_tide <- !is.null(response$error)
+  if (estimated_tide) {
+    print("No data. Defaulting to The Battery")
+    station = battery
+    url <- paste0(
+      "https://tidesandcurrents.noaa.gov/api/prod/datagetter?",
+      "begin_date=", begin_date,
+      "&end_date=", end_date,
+      "&station=", station,
+      "&product=predictions",
+      "&datum=MLLW",
+      "&time_zone=lst_ldt&units=english&interval=hilo&format=json"
+    )
+    response <- httr::GET(url) |>
+      httr::content("text") |>
+      jsonlite::fromJSON(simplifyDataFrame = TRUE)
+  }
+  response$estimated_tide <- estimated_tide
+  return(response)
+}
 # get tide data for a specific period
 get_tide_data_noaa <- function(station = "8518750", # the battery
                                begin_date = "2021-01-01",
                                end_date = "2021-01-01") {
+  # for error handling
+  max_attempts <- 3
+  attempt <- 1
 
-  begin_date <- gsub("-","",begin_date)
-  end_date <- gsub("-","",end_date)
+  begin_date <- gsub("-","",as.character(begin_date))
+  end_date <- gsub("-","",as.character(end_date))
+  # debug
+  print(paste(begin_date,end_date,station))
 
   url <- paste0("https://tidesandcurrents.noaa.gov/api/prod/datagetter?",
                 "begin_date=",begin_date,
@@ -28,16 +60,26 @@ get_tide_data_noaa <- function(station = "8518750", # the battery
                 "&datum=MLLW",
                 "&time_zone=lst_ldt&units=english&interval=hilo&format=json")
 
-  response <- httr::GET(url) |>
-    httr::content("text") |>
-    jsonlite::fromJSON(simplifyDataFrame = TRUE)
-  tides_noaa <- response$predictions |>
+  while(attempt <= max_attempts) {
+    tryCatch({
+      get_json_response(url)
+      break
+    }, error = function(e) {
+      if (attempt == max_attempts) {
+        stop("JSON parse failure", max_attempts, " attempts.")
+      }
+      print(paste("JSON parse Attempt", attempt, "failed. Retrying..."))
+      attempt <- attempt + 1
+    })
+  }
+
+    tides_noaa <- response$predictions |>
     set_names(c("datetime","tide_level","hi_lo")) |>
     mutate(date = as.Date(datetime),.before = datetime) |>
     mutate(datetime = ymd_hms(paste0(datetime,":00"),tz= "America/New_York")) |>
     mutate(tide_level = as.numeric(tide_level)) |>
     mutate(station_id = station,.before = tide_level) |>
-    as_tibble()
+    mutate(estimated_tide = estimated_tide)
 
   attr(tides_noaa,"station_id") <- station
   return(tides_noaa)
@@ -54,9 +96,10 @@ get_tide_data_noaa_year <- function(year=2011, station = "8518750"){
 }
 
 # get tide position for a specific time ----------------------------------
-get_tide_position <- function(obs_time,tide_data){
+get_tide_position <- function(obs_time){
   # find the closest tide time to the observation time
-  tide_time <- tide_data |>
+  # use global tides_noaa. Is it faster?
+  tide_time <- tides_noaa |>
     filter(abs(datetime-obs_time) <6) |>
     slice_min(order_by=datetime,n=1)
   return(tibble(since_tide = obs_time-tide_time$datetime,
@@ -64,44 +107,63 @@ get_tide_position <- function(obs_time,tide_data){
                 flood_or_ebb = if_else(tide_time$hi_lo == "H",-1,1)))
 }
 
+get_tide_time <- function(obs_time,station){
+  # find the closest tide time to the observation time
+  # use global tides_noaa. Is it faster?
+  tide_time <- tides_noaa |>
+    filter(station_id == station) |>
+    filter(difftime(obs_time,datetime,units="hours") < 6) |>
+    slice_min(order_by=datetime,n=1)
+  return(tide_time$datetime)
+}
+
 # get tide stations needed
-wq_meta_2 <- duckplyr_df_from_file("data/wq_meta_2.csv","read_csv_auto")
-needed_stations <- wq_meta_2 |>
-  pull(closest_tide_Id) |>
-  unique()
+wq_data_2 <- duckplyr_df_from_file("data/wq_data_2.parquet","read_parquet")
 
-# test
-tides_data <- get_tide_data_noaa_year(year= 2021)
+needed_data <- wq_data_2 |>
+  select(date,closest_tide_Id,date) |>
+  distinct()
 
-year_range = 2011:2024
-#needed_stations <- needed_stations[1:2]
+# get tide data for each date and station in wq_data_2
+# map() returns nothing if there is an error at any point.  Instead, this builds
+# data frame one iteration at a time, allowing a manual restart from
+# the last successful iteration. Change start_index to current value of n
+start_index = 1
+# tides_noaa <- tibble()
+for (n  in start_index:nrow(needed_data)) {
+    # for() converts date to numeric
+    print(paste(needed_data$closest_tide_Id[n],needed_data$date[n]))
+    tides_noaa <- bind_rows(
+      tides_noaa,
+      get_tide_data_noaa(
+        station = needed_data$closest_tide_Id[n],
+        end_date = needed_data$date[n],
+        begin_date = needed_data$date[n] - 1
+      )
+    )
+}
 
-# construct a tibble with all combinations of year_range and needed_stations
-# and then use map to get the tide data for each combination
-# this will take a while
-tides_needed <- tibble(year = rep(year_range,each = length(needed_stations)),
-                     station = rep(needed_stations,length(year_range)))
+tides_noaa <- tides_noaa |> distinct()
 
-# get full history.  This will take a while
-tides_noaa <-  map2(tides_needed$year,
-                    tides_needed$station,
-                    get_tide_data_noaa_year) |>
-  bind_rows()
-
-
-save(tides_noaa,file="data/tides_noaa.rdata")
 # save as parquet file
-write_parquet(tides_noaa,"data/tides_noaa.parquet")
-# save with duckdb
+# df_to_parquet(tides_noaa,"data/tides_noaa.parquet")
+arrow::write_parquet(tides_noaa,"data/tides_noaa.parquet")
 
 
-get_tide_position(ymd_hms("2021-01-01 12:00:00",tz= "America/New_York"),tides_data)
+tides_noaa <- duckplyr_df_from_parquet("data/tides_noaa.parquet")
+
+get_tide_position(ymd_hms("2021-01-01 12:00:00",tz= "America/New_York"))
+get_tide_time(ymd_hms("2021-01-01 12:00:00",tz= "America/New_York"),"8518750")
 
 # get tide position for all sample times in wq_data
 # mutate to return a list column
-wq_data <- wq_data |>
-  mutate(tide = map(sample_time,~get_tide_position(.x,tides_noaa)))
+wq_data_2 <- duckplyr_df_from_parquet("data/wq_data_2.parquet")
 
+tides <- tides_noaa |>
+  rename(closest_tide_Id = station_id)
+
+wq_data_3 <- wq_data_2 |>
+  left_join(tides,by = c("date","closest_tide_Id"))
 
 # # get tide data from usharbors.com----------------------------------
 #   make_tide_year_mo <- function(year,month){

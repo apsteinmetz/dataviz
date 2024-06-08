@@ -24,20 +24,19 @@ wq_data_raw <- read_sheet(wq_url,"Data")
 # rK_path <- "~/downloads/Riverkeeper_Community_Monitoring_FIB_Data_Open_20220420.xlsx"
 # rk_data_raw <- readxl::read_xlsx(rK_path)
 
-rk_data_raw <- read_sheet(wq_url,"Data")
+# rk_data_raw <- read_sheet(wq_url,"Data")
 
 
 # Wrangle Data ----------------------------------
 wq_meta <- wq_meta_raw %>%
-  rename_with(~str_replace_all(.x," ","_")) %>%
-  rename_with(~str_replace_all(.x,"/","_")) %>%
+  janitor::clean_names() |>
   rename("site" = 2) %>%
   filter(!is.na(site)) %>%
-  mutate(Currently_Testing = if_else(is.na(Currently_Testing),0,1)) %>%
-  mutate(Currently_Testing = as.logical(Currently_Testing)) %>%
-  rename_with(tolower) %>%
-  mutate(district_council_number = unlist(district_council_number)) |>
-  mutate(site = as.factor(site))
+  # some longitudes are erroneously positive
+  mutate(longitude = if_else(longitude >0,-longitude,longitude)) |>
+  mutate(currently_testing = if_else(is.na(currently_testing),0,1)) %>%
+  mutate(currently_testing = as.logical(currently_testing))
+  # mutate(district_council_number = unlist(district_council_number)) |>
 
 
 data_names <- c("site","date","year","month","high_tide","sample_time","bacteria",
@@ -49,8 +48,8 @@ wq_data <- wq_data_raw |>
   mutate(date = as_date(date)) %>%
   mutate(sample_time = hms::as_hms(sample_time)) %>%
   mutate(high_tide = hms::as_hms(high_tide)) %>%
-  mutate(sample_time = ymd_hms(paste(date,sample_time))) |>
-  mutate(high_tide = ymd_hms(paste(date,high_tide))) |>
+  mutate(sample_time = ymd_hms(paste(date,sample_time),tz= "America/New_York")) |>
+  mutate(high_tide = ymd_hms(paste(date,high_tide),tz= "America/New_York")) |>
   mutate(across(where(is.list), as.character)) %>%
   mutate(across(where(is.character), .fns = ~ str_replace(.x, "<10", "0"))) %>%
   # > 24196 test limit?
@@ -74,11 +73,10 @@ wq_data <- wq_data_raw |>
   mutate(site = as.factor(site))
 
 
-save(wq_data,file="data/wq_data.rdata")
-save(wq_meta,file="data/wq_meta.rdata")
+# Save Data ----------------------------------
+arrow::write_parquet(wq_data,"data/wq_data.parquet")
+arrow::write_parquet(wq_meta,"data/wq_meta.parquet")
 
-load("data/wq_data.rdata")
-load("data/wq_meta.rdata")
 load("data/weather.rdata")
 load("data/tides.rdata")
 
