@@ -135,21 +135,22 @@ arrow::write_parquet(tides_noaa,"data/tides_noaa.parquet")
 # functions to assign tide data water quality spreadsheet ----------------------
 
 # get tide position for a specific time
-get_tide_position <- Vectorize(function(obs_time= as.POSIXct("2011-10-20 18:43:00"),station="8530645"){
+get_tide_position <- function(obs_time = as.POSIXct("2011-10-20 18:43:00"), station = "8530645") {
   # find the closest tide time to the observation time
   # use global tides_noaa. Is it faster?
-  tide_time <- tides_noaa |>
-      filter(station_id == station) |>
-      mutate(hours_since_last = difftime(obs_time, datetime, units = "hours")) |>
-      filter(hours_since_last > 0) |>
-      slice_min(order_by = hours_since_last, n = 1) |>
-      #  take estimated_tide == FALSE when a proxy is also returned
-      arrange(estimated_tide) |>
-      head(1)
-      return(tibble(since_tide = difftime(obs_time,tide_time$datetime,units="hours"),
-                last_tide_level = tide_time$tide_level,
-                flood_or_ebb = if_else(tide_time$hi_lo == "H",-1,1)))
-})
+  tide_pos <- tides_noaa |>
+    filter(station_id == station) |>
+    mutate(hours_since_last = difftime(obs_time, datetime, units = "hours")) |>
+    filter(hours_since_last > 0) |>
+    slice_min(order_by = hours_since_last, n = 1) |>
+    #  take estimated_tide == FALSE when a proxy is also returned
+    arrange(hours_since_last) |>
+    tail(1) |>
+    rename(tide_time = datetime) |>
+    mutate(flood_or_ebb = if_else(hi_lo == "H", -1, 1)) |>
+    select(-date,-hi_lo)
+  return(tide_pos)
+}
 
 get_tide_time <- function(obs_time, station = "8530645") {
   # find the closest tide time to the observation time
