@@ -1,7 +1,7 @@
 # get tide data from noaa ----------------------------------
 library(tidyverse)
 library(lubridate)
-library(rnoaa)
+#library(rnoaa)
 library(rvest)
 library(duckdb)
 library(duckplyr)
@@ -129,97 +129,3 @@ tides_noaa <- tides_noaa |> distinct()
 # save as parquet file
 # df_to_parquet(tides_noaa,"data/tides_noaa.parquet")
 arrow::write_parquet(tides_noaa,"data/tides_noaa.parquet")
-
-
-
-# functions to assign tide data water quality spreadsheet ----------------------
-
-# get tide position for a specific time
-get_tide_position <- function(obs_time = as.POSIXct("2011-10-20 18:43:00"), station = "8530645") {
-  # find the closest tide time to the observation time
-  # use global tides_noaa. Is it faster?
-  tide_pos <- tides_noaa |>
-    filter(station_id == station) |>
-    mutate(hours_since_last = difftime(obs_time, datetime, units = "hours")) |>
-    filter(hours_since_last > 0) |>
-    slice_min(order_by = hours_since_last, n = 1) |>
-    #  take estimated_tide == FALSE when a proxy is also returned
-    arrange(hours_since_last) |>
-    tail(1) |>
-    rename(tide_time = datetime) |>
-    mutate(flood_or_ebb = if_else(hi_lo == "H", -1, 1)) |>
-    select(-date,-hi_lo)
-  return(tide_pos)
-}
-
-get_tide_time <- function(obs_time, station = "8530645") {
-  # find the closest tide time to the observation time
-  # use global tides_noaa. Is it faster?
-  tide_time <- tides_noaa |>
-    filter(station_id == station) |>
-    mutate(hours_since_last = difftime(obs_time, datetime, units = "hours")) |>
-    filter(hours_since_last > 0) |>
-    slice_min(order_by = hours_since_last, n = 1) |>
-    #  take estimated_tide == FALSE when a proxy is also returned
-    arrange(estimated_tide) |>
-    head(1) |>
-    pull(datetime)
-  return(tide_time)
-}
-
-get_tide_time_2 <- Vectorize(function(obs_time, station = "8530645") {
-  # find the closest tide time to the observation time
-  # use global tides_noaa. Is it faster?
-  tide_time <- tides_noaa |>
-    filter(station_id == station) |>
-    mutate(hours_since_last = difftime(obs_time, datetime, units = "hours")) |>
-    filter(hours_since_last > 0) |>
-    slice_min(order_by = hours_since_last, n = 1) |>
-    #  take estimated_tide == FALSE when a proxy is also returned
-    arrange(estimated_tide) |>
-    head(1) |>
-    pull(datetime)
-  return(tide_time)
-})
-
-
-# assign best available tide data to each sample -------------------------------
-tides_noaa <- duckplyr_df_from_parquet("data/tides_noaa.parquet")
-
-# test
-get_tide_position(ymd_hms("2011-10-20 12:00:00",tz= "America/New_York"))
-get_tide_time    (ymd_hms("2011-10-20 12:00:00",tz= "America/New_York"),"8530645")
-
-# get tide position for all sample times in wq_data
-# mutate to return a list column
-wq_data_2 <- duckplyr_df_from_parquet("data/wq_data_2.parquet")
-
-#test
-
-
-methods_restore()
-tides_noaa <- as_tibble(tides_noaa)
-tictoc::tic()
-wq_data_3 <- wq_data_2[1:20,] |>
-  as_tibble() |>
-  mutate(tide_time = map2(sample_time,closest_tide_Id,get_tide_position)) |>
-  unnest(tide_time)
-
-  #unnest(tide_time) |>
-  #distinct()
-# vectorize loses the class attribute. put it back
-attributes(wq_data_3$tide_time) <- list(class=c("POSIXct","POSIXt"))
-tictoc::toc()
-
-tides_noaa_2 <- tides_noaa |>
-  rename(closest_tide_Id = station_id,
-         tide_time = datetime) |>
-  mutate(tide_direction = ifelse(hi_lo == "H",-1,1)) |>
-  select(-date,-hi_lo,-estimated_tide) |>
-  distinct()
-
-wq_data_3 <- wq_data_3 |>
-  left_join(tides_noaa_2,by=c("closest_tide_Id","tide_time")) |>
-  mutate(since_tide = difftime(sample_time,tide_time,units="hours"))
-
-
