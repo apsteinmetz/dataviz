@@ -125,7 +125,32 @@ for (n  in start_index:nrow(needed_data)) {
 
 tides_noaa <- tides_noaa |> distinct()
 
+# or get full years.  More days but faster than single dates
+needed_stations <- needed_data$closest_tide_Id |> unique()
+start_index = 6
+# tides_noaa <- tibble()
+for (n  in  start_index:length(needed_stations)) {
+  for(yr in 2011:2024){
+    print(paste(n,needed_stations[n],yr))
+    tides_noaa <- bind_rows(
+      tides_noaa,
+      get_tide_data_noaa_year(year = yr,station = needed_stations[n])
+    )
+  }
+}
+tides_noaa <- tides_noaa |> distinct()
+
 
 # save as parquet file
 # df_to_parquet(tides_noaa,"data/tides_noaa.parquet")
 arrow::write_parquet(tides_noaa,"data/tides_noaa.parquet")
+
+# select just the needed days and previous day
+tides_noaa_sm <- needed_data |>
+  mutate(date = date - 1) |>
+  bind_rows(needed_data) |>
+  arrange(date) |>
+  rename(station_id = closest_tide_Id) |>
+  inner_join(tides_noaa,by = c("date","station_id"))
+
+arrow::write_parquet(tides_noaa,"data/tides_noaa_sm.parquet")
