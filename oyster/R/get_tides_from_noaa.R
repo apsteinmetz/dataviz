@@ -153,4 +153,4 @@ tides_noaa_sm <- needed_data |>
   rename(station_id = closest_tide_Id) |>
   inner_join(tides_noaa,by = c("date","station_id"))
 
-arrow::write_parquet(tides_noaa,"data/tides_noaa_sm.parquet")
+arrow::write_parquet(tides_noaa_sm,"data/tides_noaa_sm.parquet")

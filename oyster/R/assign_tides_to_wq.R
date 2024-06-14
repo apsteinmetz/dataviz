@@ -34,7 +34,7 @@ get_tide_position <- function(obs_time = as.POSIXct("2011-10-20 18:43:00"), stat
   tide_pos <- try_tide(station)
   if (tide_pos$hours_since_last[1] > 8){
     tide_pos <- try_tide(battery)
-    tide_pos$estimated_tide = TRUE)
+    tide_pos$estimated_tide = TRUE
   }
   return(tide_pos)
 }
@@ -71,7 +71,7 @@ get_tide_time_2 <- Vectorize(function(obs_time, station = "8530645") {
 
 
 # assign best available tide data to each sample -------------------------------
-tides_noaa <- duckplyr_df_from_parquet("data/tides_noaa.parquet")
+tides_noaa <- duckplyr_df_from_parquet("data/tides_noaa_sm.parquet")
 
 # test
 get_tide_position(ymd_hms("2011-10-20 12:00:00",tz= "America/New_York"))
@@ -82,14 +82,12 @@ get_tide_time    (ymd_hms("2011-10-20 12:00:00",tz= "America/New_York"),"8530645
 wq_data_2 <- df_from_parquet("data/wq_data_2.parquet")
 
 #test
-
-
 methods_restore()
 tides_noaa <- as_tibble(tides_noaa)
 tictoc::tic()
 wq_data_3 <- wq_data_2[11:20,] |>
   as_tibble() |>
-  rowwise() %>% 
+  rowwise() %>%
   mutate(tide_time = map2_dfr(sample_time,closest_tide_Id,get_tide_position)) |>
   unnest(tide_time)
 
