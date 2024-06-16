@@ -7,7 +7,7 @@ library(lubridate)
 library(rnoaa)
 library(rvest)
 
-# Get Data ----------------------------------
+# Get Water Quality Data ----------------------------------
 
 googlesheets4::gs4_deauth()
 wq_url <-
@@ -18,104 +18,25 @@ wq_meta_raw <- read_sheet(wq_url,"Information",range = "A10:J400")
 wq_data_raw <- read_sheet(wq_url,"Data")
 
 
-# get tide data ----------------------------------
-make_tide_year_mo <- function(year,month){
-  return(paste0(year,"-",str_pad(month,2,pad="0")))
-}
-
-
-make_datetime <- function(date,time){
-  return(as_datetime(paste(date,time),format = "%Y-%m-%d %I:%M %p",tz="America/New_York"))
-}
-
-make_date <- function(year_mo,day){
-  return(as.Date(paste(year_mo,day,sep = "-"),format = "%Y-%m-%d"))
-}
-
-tide_year_mos <- NULL
-for (i in 2020:2024){
-  for(j in 1:12){
-    tide_year_mos <- c(tide_year_mos,make_tide_year_mo(i,j))
-  }
-}
-tide_year_mos
-
-
-
-get_tide_data <- function(tide_year_mo = "2021-04") {
-  # tide_year_mo <- make_tide_year_mo(tide_year, tide_mo)
-  cat(tide_year_mo)
-  tides_html <- rvest::read_html(
-    paste0(
-      "https://www.usharbors.com/harbor/new-york/new-york-the-battery-ny/tides/?tide=",
-      tide_year_mo,
-      "#monthly-tide-chart"
-    )
-  )
-  
-  #extract monthly tide chart
-  tides <- tides_html %>%
-    rvest::html_nodes(xpath = '//*[@id="monthly-tide-chart"]') %>%
-    rvest::html_table() |>
-    pluck(1)
-  if (length(tides) == 0) {
-    cat(" No Data\n")
-    return(NULL)
-  }
-  
-  cat("\n")
-  tides <- tides  |>
-    janitor::clean_names() |>
-    select(1:10) |>
-    # remove first row with units
-    slice(-1) |>
-    set_names(
-      c(
-        "daynum",
-        "day_of_week",
-        "high_tide_am_time",
-        "high_tide_am_ft",
-        "high_tide_pm_time",
-        "high_tide_pm_ft",
-        "low_tide_am_time",
-        "low_tide_am_ft",
-        "low_tide_pm_time",
-        "low_tide_pm_ft"
-      )
-    ) |>
-    mutate(date = make_date(tide_year_mo, daynum),
-           .before = "daynum") |>
-    filter(!is.na(date)) |> 
-  mutate(across(contains("ft"), as.numeric)) |>
-    mutate(across(contains("am_time"),  ~ paste(.x, "AM"))) |>
-    mutate(across(contains("pm_time"),  ~ paste(.x, "PM"))) |>
-    mutate(across(contains("time"),  ~ make_datetime(date, .x))) |>
-    select(-daynum, -day_of_week)
-  return(tides)
-}
-
-
-
-tides <- map(tide_year_mos,get_tide_data) |> bind_rows()
 
 # riverkeeper data ----------------------------------
-rk_url <- "https://www.hydroshare.org/resource/e22138bd77914201af48fce5bfc458f4/data/contents/Riverkeeper_Community_Monitoring_FIB_Data_Open_20220420.xlsx"
-rK_path <- "~/downloads/Riverkeeper_Community_Monitoring_FIB_Data_Open_20220420.xlsx"
-rk_data_raw <- readxl::read_xlsx(rK_path)
+# rk_url <- "https://www.hydroshare.org/resource/e22138bd77914201af48fce5bfc458f4/data/contents/Riverkeeper_Community_Monitoring_FIB_Data_Open_20220420.xlsx"
+# rK_path <- "~/downloads/Riverkeeper_Community_Monitoring_FIB_Data_Open_20220420.xlsx"
+# rk_data_raw <- readxl::read_xlsx(rK_path)
 
-rk_data_raw <- read_sheet(wq_url,"Data")
+# rk_data_raw <- read_sheet(wq_url,"Data")
 
 
 # Wrangle Data ----------------------------------
 wq_meta <- wq_meta_raw %>%
-  rename_with(~str_replace_all(.x," ","_")) %>%
-  rename_with(~str_replace_all(.x,"/","_")) %>%
+  janitor::clean_names() |>
   rename("site" = 2) %>%
   filter(!is.na(site)) %>%
-  mutate(Currently_Testing = if_else(is.na(Currently_Testing),0,1)) %>%
-  mutate(Currently_Testing = as.logical(Currently_Testing)) %>%
-  rename_with(tolower) %>%
-  mutate(site = as.factor(site))
+  # some longitudes are erroneously positive
+  mutate(longitude = if_else(longitude >0,-longitude,longitude)) |>
+  mutate(currently_testing = if_else(is.na(currently_testing),0,1)) %>%
+  mutate(currently_testing = as.logical(currently_testing))
+  # mutate(district_council_number = unlist(district_council_number)) |>
 
 
 data_names <- c("site","date","year","month","high_tide","sample_time","bacteria",
@@ -127,6 +48,8 @@ wq_data <- wq_data_raw |>
   mutate(date = as_date(date)) %>%
   mutate(sample_time = hms::as_hms(sample_time)) %>%
   mutate(high_tide = hms::as_hms(high_tide)) %>%
+  mutate(sample_time = ymd_hms(paste(date,sample_time),tz= "America/New_York")) |>
+  mutate(high_tide = ymd_hms(paste(date,high_tide),tz= "America/New_York")) |>
   mutate(across(where(is.list), as.character)) %>%
   mutate(across(where(is.character), .fns = ~ str_replace(.x, "<10", "0"))) %>%
   # > 24196 test limit?
@@ -150,15 +73,10 @@ wq_data <- wq_data_raw |>
   mutate(site = as.factor(site))
 
 
-save(wq_data,file="data/wq_data.rdata")
-save(wq_meta,file="data/wq_meta.rdata")
-save(wq_data,file="data/wq_data.rdata")
-save(wq_meta,file="data/wq_meta.rdata")
-save(tides,file="data/tides.rdata")
+# Save Data ----------------------------------
+arrow::write_parquet(wq_data,"data/wq_data.parquet")
+arrow::write_parquet(wq_meta,"data/wq_meta.parquet")
 
-
-load("data/wq_data.rdata")
-load("data/wq_meta.rdata")
 load("data/weather.rdata")
 load("data/tides.rdata")
 
