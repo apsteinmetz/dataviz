@@ -3,6 +3,7 @@
 library(dplyr)
 library(lubridate)
 library(purrr)
+library(arrow)
 
 # devtools::install_github("ropensci/rnoaa")
 library(rnoaa)
@@ -98,6 +99,9 @@ if (UPDATE){
   weather <- bind_rows(weather,weather_update) %>% distinct()
   }
   save(weather,file="data/weather.rdata")
+  arrow::write_parquet(weather,"data/weather.parquet")
+  write_csv(weather,"data/weather.csv")
+  
 }
 
 # experimental tide data

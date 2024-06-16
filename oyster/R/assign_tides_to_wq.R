@@ -5,7 +5,7 @@ library(lubridate)
 library(rvest)
 library(duckdb)
 library(duckplyr)
-# library(arrow)
+library(arrow)
 
 # use duckdb for every tidyverse function
 methods_overwrite()
@@ -34,7 +34,7 @@ get_tide_position <- function(obs_time = as.POSIXct("2011-10-20 18:43:00"), stat
   tide_pos <- try_tide(station)
   if (tide_pos$hours_since_last[1] > 8){
     tide_pos <- try_tide(battery)
-    tide_pos$estimated_tide = TRUE
+    tide_pos$good_tide_station <- FALSE
   }
   return(tide_pos)
 }
@@ -85,27 +85,19 @@ wq_data_2 <- df_from_parquet("data/wq_data_2.parquet")
 methods_restore()
 tides_noaa <- as_tibble(tides_noaa)
 tictoc::tic()
-wq_data_3 <- wq_data_2[11:20,] |>
+wq_data_3 <- wq_data_2 |>
   as_tibble() |>
+  # there should be no NA in closest_tide_Id with clean data
+  filter(!is.na(closest_tide_Id)) |>
   rowwise() %>%
   mutate(tide_time = map2_dfr(sample_time,closest_tide_Id,get_tide_position)) |>
-  unnest(tide_time)
-
-  #unnest(tide_time) |>
-  #distinct()
-# vectorize loses the class attribute. put it back
-attributes(wq_data_3$tide_time) <- list(class=c("POSIXct","POSIXt"))
+  unnest(tide_time) |>
+  rename(tide_station_id = station_id) |>
+  mutate(hours_since_last = as.numeric(hours_since_last))
 tictoc::toc()
 
-tides_noaa_2 <- tides_noaa |>
-  rename(closest_tide_Id = station_id,
-         tide_time = datetime) |>
-  mutate(tide_direction = ifelse(hi_lo == "H",-1,1)) |>
-  select(-date,-hi_lo,-estimated_tide) |>
-  distinct()
-
-wq_data_3 <- wq_data_3 |>
-  left_join(tides_noaa_2,by=c("closest_tide_Id","tide_time")) |>
-  mutate(since_tide = difftime(sample_time,tide_time,units="hours"))
-
+# write to parquet
+arrow::write_parquet(wq_data_3,"data/wq_data_3.parquet")
+# write to csv
+write_csv(wq_data_3,"data/wq_data_3.csv")
 
