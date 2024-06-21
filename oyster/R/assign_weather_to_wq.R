@@ -24,7 +24,7 @@ write_csv(wq_data_4,"data/wq_data_4.csv")
 
 # features used for modeling
 wq_model_data <- wq_data_4 |>
-  select(bacteria,precip_wk,tide_level,hours_since_last,flood_or_ebb,temperature_noaa,precip_noaa)
+  select(site,bacteria,precip_wk,tide_level,hours_since_last,flood_or_ebb,temperature_noaa,precip_noaa)
 # write to parquet
 arrow::write_parquet(wq_model_data,"data/wq_model_data.parquet")
 # write to csv

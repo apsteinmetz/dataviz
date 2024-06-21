@@ -141,9 +141,19 @@ for (n  in  start_index:length(needed_stations)) {
 tides_noaa <- tides_noaa |> distinct()
 
 
+# add tide_level range and phase duration so we can impute current later
+tides_noaa <- tides_noaa |>
+  arrange(station_id,date) |>
+  group_by(station_id) |>
+  # positive tide range is incoming tide
+  mutate(tide_range_ft = lead(tide_level) - tide_level) |>
+  mutate(tide_duration_hrs = as.numeric(lead(datetime)-datetime)) |>
+  mutate(tide_duration_hrs = ifelse(tide_duration_hrs > 8, NA, tide_duration_hrs))
 # save as parquet file
 # df_to_parquet(tides_noaa,"data/tides_noaa.parquet")
 arrow::write_parquet(tides_noaa,"data/tides_noaa.parquet")
+
+
 
 # select just the needed days and previous day
 tides_noaa_sm <- needed_data |>

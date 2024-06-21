@@ -1,12 +1,12 @@
 # get closest tide station
 library(tidyverse)
-library(rnoaa)
+# library(rnoaa)
 library(rvest)
 library(duckdb)
 library(duckplyr)
 
 methods_overwrite()
-
+battery <- "8518750"
 # uses javascript on the fly so save this page as html and read that
 # https://tidesandcurrents.noaa.gov/tide_predictions.html?gid=1407#listing
 
@@ -121,6 +121,10 @@ arrow::write_parquet(wq_meta_2, "data/wq_meta_2.parquet")
 wq_data_2 <- arrow::read_parquet("data/wq_data.parquet",as_data_frame = FALSE) |>
   left_join(wq_meta_2 %>% select(site,closest_tide_Id), by = "site") |>
   select(-high_tide)
+
+#  choose battery where missing tide station
+wq_data_2 <- wq_data_2 |>
+  mutate(closest_tide_Id = if_else(is.na(closest_tide_Id), battery, closest_tide_Id))
 
 arrow::write_parquet(wq_data_2,"data/wq_data_2.parquet")
 
