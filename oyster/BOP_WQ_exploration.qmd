@@ -24,7 +24,10 @@ CurrentSpeed = TideHighLowRange \* \sin(\pi \* HoursSinceLastTide / TideDuration
 
 I chose to use just the weekly total rainfall and the one-day rainfall amounts. Obviously, we don't know if the more of 1-day rain fell before or after the sample was taken.
 
-The BOP data does not include temperature. I used the NOAA Central Park temperature for each sample day as a data feature. This is a (not very good) proxy for the water temperature but also for seasonality. Consequently, I don't use dates as a data feature.
+The BOP data does not include temperature. I used the NOAA Central Park temperature for each sample day as a data feature. This is a (not very good) proxy for the water temperature but also for seasonality. This allows seasonality to be a continuous variable. Otherwise, "month" would be a categorical variable.
+
+In the end I chose to the following features: `Site`, `Date`, `Time`, `Enterococci`, `TideHighLowRange`, `TideDurationHrs`, `HoursSinceLastTide`, `CurrentSpeed`, `OneDayRain`, `WeeklyRain` and `Temperature`.
+
 
 ```{r}
 1 + 1
