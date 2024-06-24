@@ -167,14 +167,33 @@ wq_adj_lm_indiv |>
   # do not show x-axis labels
   theme(axis.text.x = element_blank())
 
-best_model_data <- wq_adj_lm_indiv |>
+best_models <- wq_adj_lm_indiv |>
   ungroup() |>
   filter(nobs > 100) |>
   slice_max(r.squared, n = 1)
   # filter(r.squared  > .24)
 
-best_model_data |> select(data) |>
-  unnest(data) |>
+best_model_data <-best_models |> select(data) |>
+  unnest(data) |> 
+  filter(bacteria >2)
+
+hist(best_model_data$bacteria)
+
+best_model_data
+best_model_data|>
   cor() |>
   corrplot::corrplot()
+
+best_model <- lm(bacteria ~ ., data = best_model_data)
+
+summary(best_model)
+best_model |> broom::augment() |> 
+  ggplot(aes(bacteria,.fitted)) +
+  geom_point() +
+  geom_smooth() +
+  # geom_hline(yintercept = 0) +
+  labs(title = "Actual vs Fitted",
+       x = "bacteria",
+       y = ".fitted")
+
 
