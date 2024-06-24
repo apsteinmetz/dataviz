@@ -118,7 +118,7 @@ CurrentSpeed = HighLowRangeFt * sin(\pi * \frac{HoursSinceLastTide}{TideDuration
 <p>I chose to use just the weekly total rainfall and the one-day rainfall amounts. Obviously, we don’t know if the more of 1-day rain fell before or after the sample was taken.</p>
 <p>The BOP data does not include temperature. I used the NOAA Central Park temperature for each sample day as a data feature. This is a (not very good) proxy for the water temperature but also for seasonality. This allows seasonality to be a continuous variable. Otherwise, “month” would be a categorical variable.</p>
 <p>In the end I chose to the following features: <code>SampleTime</code>, <code>Enterococci</code>, <code>TideHighLowRange</code>, <code>TideDurationHrs</code>, <code>HoursSinceLastTide</code>, <code>CurrentSpeed</code>, <code>OneDayRain</code>, <code>WeeklyRain</code> and <code>Temperature</code>.</p>
-<p>The bacteria levels ar9e distributed in a lopsided way. The extreme high level is effectively infinity and conveys little information. Values above 5000 are only 5% of the observations and values below 500 are 82% of the observations.</p>
+<p>The bacteria levels are distributed in a lopsided way. The extreme high level is effectively infinity and conveys little information. Values above 5000 are only 5% of the observations and values below 500 are 82% of the observations.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -244,8 +244,12 @@ F-statistic:   108 on 6 and 11831 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="cell-output cell-output-error">
-<pre><code>Error in is.data.frame(x): object 'best_model_data' not found</code></pre>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="BOP_WQ_exploration_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <div class="cell">

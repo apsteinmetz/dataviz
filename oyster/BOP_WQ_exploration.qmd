@@ -229,7 +229,7 @@ best_model <- wq_adj_lm_indiv |>
 
 best_site <- best_model$site[1]
 
-bestt_model_data <- best_model|> 
+best_model_data <- best_model|> 
   select(data) |>
   unnest(data)
 
