@@ -18,6 +18,8 @@ wq |> pivot_longer(bacteria) |>
        x = "Bacteria Concentration",
        y = "Frequency")
 
+wq |> filter(bacteria> 5000)
+
 wq |> pivot_longer(temperature_noaa) |>
   ggplot(aes(x = value)) +
   geom_histogram() +
@@ -113,7 +115,7 @@ wq_adj |>
   select(-site) |>
   gather() |>
   ggplot(aes(x = value)) +
-  geom_histogram() +
+  geom_histogram(bins=20) +
   facet_wrap(~key, scales = "free")
 
 # show pairwise correlation plots
