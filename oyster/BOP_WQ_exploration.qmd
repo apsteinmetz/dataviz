@@ -53,7 +53,7 @@ The BOP data does not include temperature. I used the NOAA Central Park temperat
 
 In the end I chose to the following features: `SampleTime`, `Enterococci`, `TideHighLowRange`, `TideDurationHrs`, `HoursSinceLastTide`, `CurrentSpeed`, `OneDayRain`, `WeeklyRain` and `Temperature`.
 
-The bacteria levels ar9e distributed in a lopsided way. The extreme high level is effectively infinity and conveys little information. Values above 5000 are only 5% of the observations and values below 500 are 82% of the observations.
+The bacteria levels are distributed in a lopsided way. The extreme high level is effectively infinity and conveys little information. Values above 5000 are only 5% of the observations and values below 500 are 82% of the observations.
 
 ```{r}
 wq |> pivot_longer(bacteria) |>
