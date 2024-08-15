@@ -6,7 +6,7 @@ library(gt)
 
 
 medal_counts <- read_csv(here::here("medals/data/medal_counts_iso.csv")) |> 
-    select(-Total) |>
+    select(-Total, - country_name) |>
     pivot_longer(cols = -c(country_code), names_to = "Medal", values_to = "Count") |> 
     mutate(Medal = str_remove(Medal, " Medal")) |> 
     mutate(Medal = as_factor(Medal)) |> 
@@ -15,7 +15,8 @@ medal_counts <- read_csv(here::here("medals/data/medal_counts_iso.csv")) |>
 # medal_counts
 
 macro_data <- read_csv(here::here("medals/data/macro_data.csv")) |> 
-    mutate(country_code = as_factor(country_code))
+    mutate(country_code = as_factor(country_code)) |> 
+    rename(flag = flag_url)
 
 medal_weights <- tibble(
     Medal = as_factor(c("Gold", "Silver", "Bronze")),
@@ -121,7 +122,12 @@ server <- function(input, output) {
                 method = "numeric",
                 palette = "viridis") |> 
             tab_header(title = "Medal Scoreboard") |> 
+            text_transform(
+                locations = cells_body(columns = flag),
+                fn = function(x) { web_image(url = x, height = 30) }
+            ) |>
             cols_label(
+                flag = "Flag",
                 Score_Wgt = "Medal Score",
                 Score_per_MM_pop = "Pop Score",
                 Score_per_GDP_USD_BN = "GDP Score",
