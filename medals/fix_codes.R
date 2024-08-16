@@ -3,6 +3,7 @@ library(tidyverse)
 library(rvest)
 library(gt)
 
+if (!file.exists(here::here("medals/data/country_codes.csv"))){
 # make master list of country codes, iso2, iso3, and ioc/fifa codes
 wiki_iso_ioc_fifa_url <- "https://en.wikipedia.org/wiki/Comparison_of_alphabetic_country_codes"
 wiki_iso_url <- "https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes"
@@ -34,8 +35,10 @@ country_codes <- left_join(wiki_iso,wiki_iso_ioc_fifa) |>
 
 # save country codes
 write_csv(country_codes,here::here("medals/data/country_codes.csv"))
-# read country codes
-country_codes <- read_csv(here::here("medals/data/country_codes.csv"))
+} else {
+  # read country codes
+  country_codes <- read_csv(here::here("medals/data/country_codes.csv"))
+}
 
 medal_counts <- read_csv(here::here("medals/data/medals_total.csv"))
   
