@@ -245,6 +245,12 @@ extract_toc_info <- function(page) {
     unlist()
   # Remove empty lines
   text_lines <- toc_table[toc_table != ""]
+  # if nrow text_lines is less than two, return an empty tibble
+  if (length(text_lines) < 2) {
+    cat("Not enough content lines found in", mag_name, year, "\n")
+    return(tibble())
+  }
+  
 
   # Define month names for detection
   month_names <- c(
@@ -259,7 +265,13 @@ extract_toc_info <- function(page) {
     "September",
     "October",
     "November",
-    "December"
+    "December",
+    # add seasons
+    "Winter",
+    "Spring",
+    "Summer",
+    "Fall",
+    "Autumn"
   )
 
   # Create regex pattern for month detection
@@ -269,12 +281,14 @@ extract_toc_info <- function(page) {
   parsed_toc <- tibble(
     magazine = character(),
     month = character(),
-    volume = numeric(),
-    issue = numeric(),
+    volume = integer(),
+    issue = integer(),
     location = character(),
     title = character(),
     author = character(),
-    note = character()
+    note = character(),
+    start_page = integer(),
+    page_count = integer()
   )
 
   current_month <- NA
@@ -288,10 +302,12 @@ extract_toc_info <- function(page) {
       current_month <- str_extract(line, month_pattern)
       current_volume <- str_extract(line, "Vol\\. (\\d+)") %>%
         str_extract("\\d+") %>%
-        as.numeric()
+        as.integer()
       current_issue <- str_extract(line, "No\\. (\\d+)") %>%
         str_extract("\\d+") %>%
-        as.numeric()
+        as.integer()
+      cat("Processed: Magazine ", mag_name,year, current_month, "Vol.", current_volume, "No.", current_issue, "\n")
+      
     } else {
       # This is a content line, parse it
       # Skip if we don't have header info yet
@@ -374,13 +390,22 @@ extract_toc_info <- function(page) {
             location = location,
             title = title,
             author = author,
-            note = note
+            note = note,
+            start_page = NA,
+            page_count = NA
           )
         )
       }
     }
   }
+  if (nrow(parsed_toc) == 0) {
+    cat("No valid content lines found in", mag_name, year, "\n")
+    return(tibble())
+  }
+
   parsed_toc <- extract_page_data(parsed_toc)
+  cat("Extracted Page Data ", mag_name,year, "Vol.", current_volume,"\n")
+  
   return(parsed_toc)
 }
 
@@ -393,9 +418,7 @@ get_annual_tocs <- function(full_url) {
   return(volume_toc)
 }  
 
-links <- scrape_year_full_urls(base_url)
-# volume_toc <- map_dfr(links, get_annual_tocs)
-
+issue_links <- scrape_year_full_urls(base_url)
 
 # Function to create a rate-limited request handler
 create_rate_limiter <- function(requests_per_minute = 30) {
@@ -450,9 +473,10 @@ scrape_heavy_metal_magazine <- function() {
   # Scrape each issue page with rate limiting
   all_articles <- tibble(
     magazine = character(),
+    year = integer(),
     month = character(),
-    volume = numeric(),
-    issue = numeric(),
+    volume = integer(),
+    issue = integer(),
     location = character(),
     title = character(),
     author = character(),
@@ -460,6 +484,7 @@ scrape_heavy_metal_magazine <- function() {
     start_page = integer(),
     page_count = integer()
   )
+  last_request_time <- Sys.time() - 60
   for (i in seq_along(issue_links)) {
     full_url <- issue_links[i]
 
@@ -478,49 +503,25 @@ scrape_heavy_metal_magazine <- function() {
 
   return(all_articles)
 }
+all_articles <- scrape_heavy_metal_magazine()
+# save results to csv
+write_csv(all_articles, "heavy_metal_mag/heavy_metal_magazine_articles.csv")
+
+# change missing magazine names to "Metal Hurlant"
+all_articles <- all_articles |> mutate(magazine = ifelse(magazine =="", "Metal Hurlant", magazine))
+# make month column a factor in chronological order
 
 
-# Run the scraper
-cat("Starting Heavy Metal Magazine scraper with httr2...\n")
-tryCatch(
-  {
-    results <- scrape_heavy_metal_magazine()
+all_articles <- all_articles |> 
+  mutate(month = factor(month, levels = c(
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+    "Winter", "Spring", "Summer", "Fall", "Autumn"
+  )))
+# make magazine a factor in order of appearance
+all_articles <- all_articles |> 
+  mutate(magazine = factor(magazine, levels = c("Heavy Metal", "Epic Illustrated", "Metal Hurlant")))
 
-    if (nrow(results) > 0) {
-      final_results <- save_results(results)
+arranged_articles <- all_articles |> 
+  arrange(magazine,year, volume, issue)
 
-      cat("Scraping completed successfully!\n")
-      cat("Total articles collected:", nrow(final_results), "\n")
-      cat("Data saved to: heavy_metal_magazine_articles.csv\n")
-      cat("Metadata saved to: heavy_metal_magazine_articles_metadata.csv\n")
-
-      # Display sample of results
-      cat("\nSample of collected data:\n")
-      print(head(final_results, 10))
-
-      # Display summary statistics
-      cat("\nSummary statistics:\n")
-      cat(
-        "Volumes covered:",
-        min(final_results$volume_number, na.rm = TRUE),
-        "to",
-        max(final_results$volume_number, na.rm = TRUE),
-        "\n"
-      )
-      cat(
-        "Years covered:",
-        min(final_results$year, na.rm = TRUE),
-        "to",
-        max(final_results$year, na.rm = TRUE),
-        "\n"
-      )
-    } else {
-      cat("No articles were collected. Please check the scraping logic.\n")
-    }
-  },
-  error = function(e) {
-    cat("An error occurred:", e$message, "\n")
-  }
-)
-
-# funtion that scrapes and returns the all the full_urls in the html table label #idText31
