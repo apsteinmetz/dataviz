@@ -503,14 +503,15 @@ scrape_heavy_metal_magazine <- function() {
 
   return(all_articles)
 }
+
+# ==============================================================================
 all_articles <- scrape_heavy_metal_magazine()
 # save results to csv
-write_csv(all_articles, "heavy_metal_mag/heavy_metal_magazine_articles.csv")
+write_csv(all_articles, "heavy_metal_mag/heavy_metal_mag_toc.csv")
 
 # change missing magazine names to "Metal Hurlant"
 all_articles <- all_articles |> mutate(magazine = ifelse(magazine =="", "Metal Hurlant", magazine))
 # make month column a factor in chronological order
-
 
 all_articles <- all_articles |> 
   mutate(month = factor(month, levels = c(
@@ -525,3 +526,68 @@ all_articles <- all_articles |>
 arranged_articles <- all_articles |> 
   arrange(magazine,year, volume, issue)
 
+
+hm_articles <- arranged_articles |> 
+  filter(magazine == "Heavy Metal")
+
+# who is the most frequently appearing author?
+top_authors <- hm_articles |> 
+  filter(!is.na(author) & author != "") |> 
+  group_by(author) |> 
+  summarise(count = n()) |> 
+  arrange(desc(count))
+
+# who are the top authors by page count
+top_authors_page_count <- hm_articles |> 
+  filter(!is.na(author) & author != "") |> 
+  group_by(author) |> 
+  summarise(total_pages = sum(page_count, na.rm = TRUE)) |> 
+  arrange(desc(total_pages))
+
+# bar chart of the top 20 authors
+top_authors |> 
+  slice_head(n = 20) |> 
+  ggplot(aes(x = reorder(author, count), y = count)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Top 20 Authors in Heavy Metal Magazine",
+       x = "Author",
+       y = "Number of Articles") +
+  theme_minimal()
+
+top_authors_page_count |> 
+  slice_head(n = 20) |> 
+  ggplot(aes(x = reorder(author, total_pages), y = total_pages)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Top 20 Authors in Heavy Metal Magazine",
+       x = "Author",
+       y = "Number of Articles") +
+  theme_minimal()
+
+# top author in each year by appearance count
+top_authors_by_year <- hm_articles |> 
+  filter(!is.na(author) & author != "") |> 
+  group_by(year, author) |> 
+  summarise(count = n(), total_pages = sum(page_count, na.rm = TRUE), .groups = 'drop') |> 
+  arrange(year, desc(count)) |> 
+  group_by(year) |> 
+  slice(1)
+# plot top author by year
+top_authors_by_year |> 
+  ggplot(aes(x = year, y = count, label = author)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_text(vjust = -0.5) +
+  labs(title = "Top Author by Year in Heavy Metal Magazine",
+       x = "Year",
+       y = "Number of Articles") +
+  theme_minimal()
+# plot top author by year by page count
+top_authors_by_year |> 
+  ggplot(aes(x = year, y = total_pages, label = author)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_text(vjust = -0.5) +
+  labs(title = "Top Author by Year in Heavy Metal Magazine",
+       x = "Year",
+       y = "Total Pages") +
+  theme_minimal()

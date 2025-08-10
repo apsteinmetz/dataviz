@@ -7,3 +7,5 @@
 tv_ratings/data/title.basics.tsv.gz
 tv_ratings/data/title.episode.tsv.gz
 tv_ratings/data/title.ratings.tsv.gz
+ggmap
+ggmap_4.0.1.tar.gz
