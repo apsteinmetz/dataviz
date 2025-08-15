@@ -506,12 +506,12 @@ scrape_heavy_metal_magazine <- function() {
 
 # ==============================================================================
 all_articles <- scrape_heavy_metal_magazine()
-# save results to csv
-write_csv(all_articles, "heavy_metal_mag/heavy_metal_mag_toc.csv")
-
 # change missing magazine names to "Metal Hurlant"
 all_articles <- all_articles |> mutate(magazine = ifelse(magazine =="", "Metal Hurlant", magazine))
 # make month column a factor in chronological order
+# save results to csv
+write_csv(all_articles, "heavy_metal_mag/heavy_metal_mag_toc.csv")
+
 
 all_articles <- all_articles |> 
   mutate(month = factor(month, levels = c(
