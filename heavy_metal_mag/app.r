@@ -1,9 +1,32 @@
 library(shiny)
 library(tidyverse)
 library(DT)
+library(googledrive)
 
-# read the data
+
+extract_comic <- function(filename) {
+  out <- tempfile("comic_")
+  dir.create(out)
+  ext <- tolower(tools::file_ext(filename))
+  if (ext == "cbz") {
+    unzip(file, exdir = out)
+    return(out)
+  }
+  if (ext == "cbr") {
+    sevenzip <- c(Sys.which("7z"))
+    sevenzip <- sevenzip[nzchar(sevenzip)][1]
+    if (!nzchar(sevenzip)) stop("Install the 'archive' package or 7-Zip ('7z'/'7za'/'7zz').")
+    system2(sevenzip, c("x", "-y", 
+                        paste0("-o", shQuote(normalizePath(out))), 
+                        shQuote(normalizePath(filename))), stdout = FALSE, stderr = FALSE)
+    return(out)
+  }
+  stop("Unsupported file extension. Expected .cbz or .cbr")
+}
+
 toc_data <- read_csv(here::here("heavy_metal_mag/heavy_metal_mag_toc.csv"))
+
+drive_auth(email = "apsteinmetz@gmail.com",token = Sys.getenv("GOOGLE_DRIVE_API"))
 
 toc_data <- toc_data %>%
   mutate(
@@ -89,8 +112,38 @@ server <- function(input, output, session) {
     }
   })
   
+  #output$selected <- renderPrint({
+  #  if (!is.null(selected_row())) selected_row() else "Double-click a row to select an article."
+  #})
+  
+  gdrive_match <- reactive({
+    sr <- selected_row()
+    if (is.null(sr)) return(NULL)
+    v <- suppressWarnings(as.integer(sr$volume[1]))
+    i <- suppressWarnings(as.integer(sr$issue[1]))
+    if (is.na(v) || is.na(i)) return(NULL)
+    q <- sprintf("name contains 'Heavy Metal v' and name contains '%d' and name contains '%d' and trashed = false", v, i)
+    pat <- paste0("^Heavy Metal v0{0,2}", v, " 0{0,2}", i, ".+\\.(cbr|cbz)$")
+    googledrive::drive_find(q = q, n_max = 200) %>%
+      filter(str_detect(name, regex(pat, ignore_case = TRUE))) %>%
+      transmute(file_name = name, drive_id = id) %>%
+      slice_head(n = 1)
+  })
+  
   output$selected <- renderPrint({
-    if (!is.null(selected_row())) selected_row() else "Double-click a row to select an article."
+    sr <- selected_row()
+    if (is.null(sr)) {
+      "Double-click a row to select an article."
+    } else {
+      print(sr)
+      dm <- gdrive_match()
+      if (!is.null(dm) && nrow(dm) > 0) {
+        cat("\nGoogle Drive match:\n")
+        print(dm)
+      } else {
+        cat("\nGoogle Drive match: none found\n")
+      }
+    }
   })
 }
 
