@@ -1,8 +1,8 @@
+
 library(shiny)
 library(tidyverse)
 library(DT)
 library(googledrive)
-
 
 extract_comic <- function(filename) {
   out <- tempfile("comic_")
@@ -30,9 +30,9 @@ drive_auth(email = "apsteinmetz@gmail.com",token = Sys.getenv("GOOGLE_DRIVE_API"
 
 toc_data <- toc_data %>%
   mutate(
-    year = as.character(year),
-    volume = as.character(volume),
-    issue = as.character(issue),
+    # year = as.character(year),
+    # volume = as.character(volume),
+    # issue = as.character(issue),
     author = if_else(is.na(author), "", author),
     title = if_else(is.na(title), "", title),
     month = if_else(is.na(month), "", month)
@@ -57,18 +57,18 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
-  all_choices <- reactiveVal(list(
+  all_choices <- list(
     year = c("", sort(unique(toc_data$year))),
     month = c("", sort(unique(toc_data$month))),
     volume = c("", sort(unique(toc_data$volume))),
     issue = c("", sort(unique(toc_data$issue)))
-  ))
+  )
   
   observe({
-    updateSelectizeInput(session, "year", choices = all_choices()$year, selected = "", server = TRUE)
-    updateSelectizeInput(session, "month", choices = all_choices()$month, selected = "", server = TRUE)
-    updateSelectizeInput(session, "volume", choices = all_choices()$volume, selected = "", server = TRUE)
-    updateSelectizeInput(session, "issue", choices = all_choices()$issue, selected = "", server = TRUE)
+    updateSelectizeInput(session, "year", choices = all_choices$year, selected = "", server = TRUE)
+    updateSelectizeInput(session, "month", choices = all_choices$month, selected = "", server = TRUE)
+    updateSelectizeInput(session, "volume", choices = all_choices$volume, selected = "", server = TRUE)
+    updateSelectizeInput(session, "issue", choices = all_choices$issue, selected = "", server = TRUE)
   })
   
   filtered <- reactive({
@@ -82,19 +82,11 @@ server <- function(input, output, session) {
     dat
   })
   
-  observe({
-    dat <- filtered()
-    updateSelectizeInput(session, "year",   choices = c("", sort(unique(dat$year))),   selected = input$year,   server = TRUE)
-    updateSelectizeInput(session, "month",  choices = c("", sort(unique(dat$month))),  selected = input$month,  server = TRUE)
-    updateSelectizeInput(session, "volume", choices = c("", sort(unique(dat$volume))), selected = input$volume, server = TRUE)
-    updateSelectizeInput(session, "issue",  choices = c("", sort(unique(dat$issue))),  selected = input$issue,  server = TRUE)
-  })
-  
   observeEvent(input$reset_filters, {
-    updateSelectizeInput(session, "year",   choices = all_choices()$year,   selected = "", server = TRUE)
-    updateSelectizeInput(session, "month",  choices = all_choices()$month,  selected = "", server = TRUE)
-    updateSelectizeInput(session, "volume", choices = all_choices()$volume, selected = "", server = TRUE)
-    updateSelectizeInput(session, "issue",  choices = all_choices()$issue,  selected = "", server = TRUE)
+    updateSelectizeInput(session, "year",   choices = all_choices$year,   selected = "", server = TRUE)
+    updateSelectizeInput(session, "month",  choices = all_choices$month,  selected = "", server = TRUE)
+    updateSelectizeInput(session, "volume", choices = all_choices$volume, selected = "", server = TRUE)
+    updateSelectizeInput(session, "issue",  choices = all_choices$issue,  selected = "", server = TRUE)
     updateTextInput(session, "author", value = "")
     updateTextInput(session, "title", value = "")
   })
@@ -111,10 +103,6 @@ server <- function(input, output, session) {
       selected_row(filtered()[row, ])
     }
   })
-  
-  #output$selected <- renderPrint({
-  #  if (!is.null(selected_row())) selected_row() else "Double-click a row to select an article."
-  #})
   
   gdrive_match <- reactive({
     sr <- selected_row()
