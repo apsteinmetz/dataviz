@@ -62,21 +62,20 @@ extract_comic <- function(filename) {
   
   unlink(temp_file)
   
-  # Remove non-image files and nested directories
   all_files <- list.files(out, recursive = TRUE, full.names = TRUE)
   image_exts <- c(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp")
   image_files <- all_files[tolower(tools::file_ext(all_files)) %in% gsub("\\.", "", image_exts)]
   
-  # Move images to root directory and rename sequentially
   if (length(image_files) > 0) {
     sorted_images <- sort(image_files)
     for (i in seq_along(sorted_images)) {
-      new_name <- file.path(out, sprintf("%03d%s", i, tools::file_ext(sorted_images[i])))
+      ext_i <- tools::file_ext(sorted_images[i])
+      if (ext_i == "") ext_i <- "jpg"
+      new_name <- file.path(out, sprintf("%03d.%s", i, tolower(ext_i)))
       file.rename(sorted_images[i], new_name)
     }
   }
   
-  # Clean up subdirectories
   subdirs <- list.dirs(out, recursive = FALSE)
   if (length(subdirs) > 0) unlink(subdirs, recursive = TRUE)
   
