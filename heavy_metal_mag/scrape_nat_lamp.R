@@ -82,15 +82,71 @@ scrape_issue_content_urls <- function(base_url) {
   }
 
 # extract all links
-  links <- html_nodes(page, "a") %>%
+  links <- page |> 
+    html_nodes("a") %>%
     html_attr("href") |> 
     as_tibble() |> 
-    filter(str_detect(value,"issue-index/1"))
+    filter(str_detect(value,"issue(s)*-index/1")) |> 
+    rename(url = value)
     
     return(links)
 }
 
-issue_content_urls <- scrape_issue_content_urls(base_url)
+get_article_info <- function(node){
+  art_title <- node |> html_element("strong, b") |> html_text2()
+  desc <- node |> html_element("em, i") |> html_text2()
+  full <- node |> html_text2() |> str_squish()
+  author <- full
+  if (!is.na(art_title) && art_title != "") author <- str_remove(author, fixed(art_title))
+  if (!is.na(desc) && desc != "") author <- str_remove(author, fixed(desc))
+  author <- author |> str_replace_all("^[:\\-–—\\s]+|[:\\-–—\\s]+$", "") |> str_squish() |> na_if("")
+  tibble(
+    title = na_if(art_title, ""),
+    author = author,
+    description = na_if(desc, "")
+  )
+}
+
+
+# Function to extract issue TOC information from a full URL
+get_issue_toc <- function(full_url) {
+  page <- safe_read_html(full_url)
+
+  main_body <- html_nodes(page,"div.mainWithBighead")
+  
+
+
+  header_text <- main_body %>%
+    html_element("div.bighead h2, .bighead h2, .entry-title, h1, h2") %>%
+    {txt <- html_text2(.); if (length(txt) == 0) NA_character_ else str_squish(txt)}
+  
+  months_re <- "(January|February|March|April|May|June|July|August|September|October|November|December|Winter|Spring|Summer|Fall|Autumn)"
+  
+  month <- str_extract(header_text, months_re)
+  year <- str_extract(header_text, "\\b(?:19|20)\\d{2}\\b") %>% as.integer()
+  volume <- str_match(header_text, "(?i)vol(?:\\.|ume)?\\s*(\\d+)")[, 2] %>% as.integer()
+  issue <- str_match(header_text, "(?i)(?:no\\.|number|issue)\\s*(\\d+)")[, 2] %>% as.integer()
+  
+title <- if (is.na(header_text)) {
+  NA_character_
+} else {
+  t <- header_text %>% str_replace("^.*?/", "") %>% str_squish()
+  if (identical(t, header_text)) NA_character_ else t
+}
+
+  header <- tibble(
+    month = month,
+    year = year,
+    volume = volume,
+    issue = issue,
+    title = title
+  )
+  
+  toc_items <-  main_body |> 
+    html_nodes("p") |> 
+    map(\(node) get_article_info(node))
+  return(toc_data)
+}
 
 # Function to create a rate-limited request handler
 create_rate_limiter <- function(requests_per_minute = 30) {
@@ -134,9 +190,9 @@ scrape_natlamp <- function() {
   rate_limiter <- create_rate_limiter(30)
 
   # Find all issue links
-  issue_links <- scrape_issue_content_urls(base_url)
+  issue_toc_links <- scrape_issue_content_urls(base_url)
 
-  if (length(issue_links) == 0) {
+  if (length(issue_toc_links) == 0) {
     cat("No issue links found. You may need to manually specify full_urls.\n")
     return(tibble())
   }
@@ -156,15 +212,15 @@ scrape_natlamp <- function() {
     page_count = integer()
   )
   last_request_time <- Sys.time() - 60
-  for (i in seq_along(issue_links)) {
-    full_url <- issue_links[i]
+  for (i in seq_along(issue_toc_links)) {
+    full_url <- issue_toc_links$url[i]
 
     # Apply rate limiting
     rate_limiter()
 
     # Extract magazine info from full_url
-    base_info <- get_annual_tocs(full_url)
-    all_articles <- bind_rows(all_articles, base_info)
+    toc_info <- get_issue_toc(full_url$value[i])
+    all_articles <- bind_rows(all_articles, toc_info)
 
     # Progress indicator
     if (i %% 10 == 0) {
