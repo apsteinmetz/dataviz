@@ -32,16 +32,50 @@ extract_se_ep <- function(text) {
 }
 
 # Fetch fully-rendered HTML via a real browser tab (Chromote)
-get_rendered_html <- function(tab, url, wait_ms = 1500) {
-  tab$Page$navigate(url = url)
-  tab$Page$loadEventFired() # waits for load event
+get_rendered_html <- function(tab, url, wait_ms = 1500, timeout = 10000) {
+  # Set a realistic user agent before navigating
+  tryCatch(
+    {
+      tab$Network$setUserAgentOverride(
+        userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        
+      )
+    },
+    error = function(e) {
+      message("Could not set user agent: ", e$message)
+    }
+  )
+  
+  # Navigate with wait_ = FALSE to avoid blocking
+  tab$Page$navigate(url = url, wait_ = FALSE)
+  
+  # Wait for load event with timeout
+  tryCatch(
+    {
+      tab$Page$loadEventFired(timeout_ = timeout)
+    },
+    error = function(e) {
+      message("Load event timeout, continuing anyway...")
+    }
+  )
+  
   Sys.sleep(wait_ms / 1000)
 
-  # Get the whole document HTML
-  res <- tab$Runtime$evaluate(
-    expression = "document.documentElement.outerHTML",
-    returnByValue = TRUE
+  # Get the whole document HTML with timeout
+  res <- tryCatch(
+    {
+      tab$Runtime$evaluate(
+        expression = "document.documentElement.outerHTML",
+        returnByValue = TRUE,
+        timeout_ = timeout
+      )
+    },
+    error = function(e) {
+      message("Error getting HTML: ", e$message)
+      return(list(result = list(value = "")))
+    }
   )
+  
   res$result$value
 }
 
@@ -179,10 +213,9 @@ parse_episode_from_one_ep_page <- function(html) {
 
 # MAIN
 bobs_one_episode_guests <- function() {
-  b <- ChromoteSession$new()
+  b <- Chromote$new()
+  tab <- b$new_session()
 
-  # Open a visible Chrome window so you can complete any bot-check if needed
-  tab <- b$new_tab()
   message("Opening IMDb full credits in a real browser tab...")
 
   html <- get_rendered_html(tab, FULLCREDITS_URL, wait_ms = 2000)
@@ -235,7 +268,8 @@ bobs_one_episode_guests <- function() {
 
   results
 }
-
 # Run it
 df <- bobs_one_episode_guests()
 print(head(df, 10))
+
+
