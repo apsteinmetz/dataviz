@@ -6,7 +6,10 @@ library(bobsburgersR)
 
 eps <- bobsburgersR::episode_data
 trans <- bobsburgersR::transcript_data
-guest_stars <- read_csv("bobs_burgers_single_episode_cast.csv", show_col_types = FALSE)
+guest_stars <- read_csv(
+  "bobs_burgers_single_episode_cast.csv",
+  show_col_types = FALSE
+)
 
 ui <- fluidPage(
   titlePanel("Bob's Burgers Episode Ratings"),
@@ -140,12 +143,17 @@ server <- function(input, output, session) {
         if (nrow(guests) > 0) {
           tagList(
             lapply(seq_len(nrow(guests)), function(i) {
-              p(paste0(guests$Actor[i], " as ", guests$`Character(s)`[i]),
-                style = "margin-left: 10px; font-size: 0.9em;")
+              p(
+                paste0(guests$Actor[i], " as ", guests$`Character(s)`[i]),
+                style = "margin-left: 10px; font-size: 0.9em;"
+              )
             })
           )
         } else {
-          p("None", style = "margin-left: 10px; font-style: italic; color: #666;")
+          p(
+            "None",
+            style = "margin-left: 10px; font-style: italic; color: #666;"
+          )
         }
       },
       hr(),
