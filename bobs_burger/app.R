@@ -18,12 +18,31 @@ imdb_data <- read_csv(
 )
 
 ui <- fluidPage(
-  titlePanel("Bob's Burgers Episode Ratings"),
+  tags$head(
+    tags$style(HTML(
+      "
+      @font-face {
+        font-family: 'BobsBurgers';
+        src: url('bobs_burgers.ttf') format('truetype');
+      }
+      .episode-title {
+        font-family: 'BobsBurgers', sans-serif;
+        font-size: 3em;
+      }
+    "
+    ))
+  ),
+  tags$div(
+    style = "text-align: center; margin-bottom: 20px;",
+    tags$img(
+      src = "banner.png",
+      style = "max-width: 80%; height: auto;"
+    )
+  ),
 
   sidebarLayout(
     sidebarPanel(
       width = 4,
-      h4("Episode Details"),
       uiOutput("episode_details")
     ),
 
@@ -190,7 +209,7 @@ server <- function(input, output, session) {
           style = "width: 100%; max-width: 400px; border-radius: 8px; margin-bottom: 15px;"
         )
       },
-      h3(ep$title),
+      h3(ep$title, class = "episode-title"),
       # Holiday Episode label
       if (
         nrow(imdb_ep) > 0 && !is.na(imdb_ep$is_holiday) && imdb_ep$is_holiday
@@ -200,7 +219,6 @@ server <- function(input, output, session) {
           style = "background-color: #007bff; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold;"
         )
       },
-      hr(),
       p(strong("Season: "), ep$season, " | ", strong("Episode: "), ep$episode),
       p(strong("Aired: "), format(ep$aired_date, "%B %d, %Y")),
       p(
@@ -230,21 +248,19 @@ server <- function(input, output, session) {
           "N/A"
         }
       ),
-      hr(),
       p(strong("Synopsis:")),
       p(ep$synopsis, style = "font-size: 0.9em;"),
       hr(),
       p(strong("Directed by: "), ep$directed_by),
       p(strong("Written by: "), ep$written_by),
-      hr(),
-      p(strong(
-        "Super special guest star because they only appear in one episode:"
-      )),
       {
         guests <- guest_stars |>
           filter(Season == ep$season, Episode == ep$episode)
         if (nrow(guests) > 0) {
           tagList(
+            p(strong(
+              "Super special guest star because they only appear in one episode:"
+            )),
             lapply(seq_len(nrow(guests)), function(i) {
               p(
                 paste0(guests$Actor[i], " as ", guests$`Character(s)`[i]),
@@ -252,14 +268,8 @@ server <- function(input, output, session) {
               )
             })
           )
-        } else {
-          p(
-            "None",
-            style = "margin-left: 10px; font-style: italic; color: #666;"
-          )
         }
       },
-      hr(),
       actionButton(
         "show_script",
         "View Script",
