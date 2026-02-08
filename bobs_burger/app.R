@@ -3,12 +3,17 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(readr)
+library(scales)
 library(bobsburgersR)
 
 eps <- bobsburgersR::episode_data
 trans <- bobsburgersR::transcript_data
 guest_stars <- read_csv(
   "bobs_burgers_single_episode_cast.csv",
+  show_col_types = FALSE
+)
+imdb_data <- read_csv(
+  "imdb_bob.csv",
   show_col_types = FALSE
 )
 
@@ -24,6 +29,13 @@ ui <- fluidPage(
 
     mainPanel(
       width = 8,
+      radioButtons(
+        "rating_source",
+        label = NULL,
+        choices = c("TMDB Rating" = "rating", "IMDB Rating" = "imdb_rating"),
+        selected = "imdb_rating",
+        inline = TRUE
+      ),
       plotOutput("heatmap", click = "plot_click", height = "600px"),
       tags$p(
         tags$a(
@@ -32,6 +44,30 @@ ui <- fluidPage(
           target = "_blank"
         ),
         style = "text-align: right; font-size: 0.85em; color: #666; margin-top: 5px;"
+      ),
+      tags$p(
+        style = "text-align: left; font-size: 1.7em; color: #666; margin-top: 15px;",
+        "A Shiny for R app by ",
+        tags$a(
+          href = "https://github.com/apsteinmetz",
+          "Art Steinmetz",
+          target = "_blank"
+        ),
+        ".",
+        tags$br(),
+        "Derived from the ",
+        tags$a(
+          href = "https://github.com/poncest/bobsburgersR",
+          "bobsburgersR",
+          target = "_blank"
+        ),
+        " package by ",
+        tags$a(
+          href = "https://github.com/poncest",
+          "Steven Ponce",
+          target = "_blank"
+        ),
+        "."
       )
     )
   )
@@ -40,17 +76,31 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   selected_episode <- reactiveVal(NULL)
 
+  # Join episode data with IMDB ratings
+
+  eps_with_imdb <- eps |>
+    left_join(
+      imdb_data |> select(season, episode, imdb_rating),
+      by = c("season", "episode")
+    )
+
   output$heatmap <- renderPlot({
     ep <- selected_episode()
+    rating_col <- input$rating_source
+    rating_label <- if (rating_col == "imdb_rating") {
+      "IMDB Rating"
+    } else {
+      "TMDB Rating"
+    }
 
     p <- ggplot(
-      eps,
-      aes(x = factor(episode), y = factor(season), fill = rating)
+      eps_with_imdb,
+      aes(x = factor(episode), y = factor(season), fill = .data[[rating_col]])
     ) +
       geom_tile(color = "white") +
       scale_fill_viridis_c(
         option = "C",
-        name = "Rating",
+        name = rating_label,
         na.value = "grey50"
       ) +
       scale_y_discrete(limits = rev) +
@@ -113,7 +163,18 @@ server <- function(input, output, session) {
       ))
     }
 
+    # Get IMDB data for this episode
+    imdb_ep <- imdb_data |>
+      filter(season == ep$season, episode == ep$episode)
+
     tagList(
+      # Thumbnail image at top
+      if (nrow(imdb_ep) > 0 && !is.na(imdb_ep$thumbnail_url)) {
+        tags$img(
+          src = imdb_ep$thumbnail_url,
+          style = "width: 100%; max-width: 400px; border-radius: 8px; margin-bottom: 15px;"
+        )
+      },
       h3(ep$title),
       hr(),
       p(strong("Season: "), ep$season, " | ", strong("Episode: "), ep$episode),
@@ -126,6 +187,17 @@ server <- function(input, output, session) {
         ),
         paste0(" (", ep$votes, " votes)")
       ),
+      # IMDB Rating
+      if (nrow(imdb_ep) > 0 && !is.na(imdb_ep$imdb_rating)) {
+        p(
+          strong("IMDB Rating: "),
+          span(
+            sprintf("%.1f", imdb_ep$imdb_rating),
+            style = "font-size: 1.5em; font-weight: bold; color: #F5C518;"
+          ),
+          paste0(" (", scales::comma(imdb_ep$imdb_vote_count), " votes)")
+        )
+      },
       p(
         strong("US Viewers: "),
         if (!is.na(ep$us_viewers_millions)) {
@@ -141,7 +213,9 @@ server <- function(input, output, session) {
       p(strong("Directed by: "), ep$directed_by),
       p(strong("Written by: "), ep$written_by),
       hr(),
-      p(strong("Guest star who only appears in one episode:")),
+      p(strong(
+        "Super special guest star because they only appear in one episode:"
+      )),
       {
         guests <- guest_stars |>
           filter(Season == ep$season, Episode == ep$episode)
@@ -178,6 +252,33 @@ server <- function(input, output, session) {
         class = "btn btn-info btn-block",
         icon("external-link-alt"),
         " View on Fandom Wiki"
+      ),
+      # IMDB Episode Link
+      if (nrow(imdb_ep) > 0 && !is.na(imdb_ep$imdb_episode_url)) {
+        tags$a(
+          href = imdb_ep$imdb_episode_url,
+          target = "_blank",
+          class = "btn btn-warning btn-block",
+          style = "margin-top: 10px;",
+          icon("imdb"),
+          " View on IMDB"
+        )
+      },
+      hr(),
+      tags$p(
+        style = "font-size: 0.8em; color: #666; text-align: center;",
+        "Data sources: ",
+        tags$a(href = "https://www.fandom.com", "Fandom", target = "_blank"),
+        ", ",
+        tags$a(
+          href = "https://www.wikipedia.com",
+          "Wikipedia",
+          target = "_blank"
+        ),
+        ", ",
+        tags$a(href = "https://www.imdb.com", "IMDB", target = "_blank"),
+        ", ",
+        tags$a(href = "https://www.themoviedb.org", "TMDB", target = "_blank")
       )
     )
   })
