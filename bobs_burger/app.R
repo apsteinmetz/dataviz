@@ -36,6 +36,11 @@ ui <- fluidPage(
         selected = "imdb_rating",
         inline = TRUE
       ),
+      checkboxInput(
+        "filter_holiday",
+        label = "Show Holiday Episodes Only",
+        value = FALSE
+      ),
       plotOutput("heatmap", click = "plot_click", height = "600px"),
       tags$p(
         tags$a(
@@ -80,7 +85,7 @@ server <- function(input, output, session) {
 
   eps_with_imdb <- eps |>
     left_join(
-      imdb_data |> select(season, episode, imdb_rating),
+      imdb_data |> select(season, episode, imdb_rating, is_holiday),
       by = c("season", "episode")
     )
 
@@ -93,15 +98,25 @@ server <- function(input, output, session) {
       "TMDB Rating"
     }
 
+    # Create plot data with holiday filtering
+    plot_data <- eps_with_imdb |>
+      mutate(
+        display_rating = if (input$filter_holiday) {
+          ifelse(is_holiday, .data[[rating_col]], NA_real_)
+        } else {
+          .data[[rating_col]]
+        }
+      )
+
     p <- ggplot(
-      eps_with_imdb,
-      aes(x = factor(episode), y = factor(season), fill = .data[[rating_col]])
+      plot_data,
+      aes(x = factor(episode), y = factor(season), fill = display_rating)
     ) +
       geom_tile(color = "white") +
       scale_fill_viridis_c(
         option = "C",
         name = rating_label,
-        na.value = "grey50"
+        na.value = "grey85"
       ) +
       scale_y_discrete(limits = rev) +
       labs(
@@ -176,6 +191,15 @@ server <- function(input, output, session) {
         )
       },
       h3(ep$title),
+      # Holiday Episode label
+      if (
+        nrow(imdb_ep) > 0 && !is.na(imdb_ep$is_holiday) && imdb_ep$is_holiday
+      ) {
+        tags$span(
+          "Holiday Episode",
+          style = "background-color: #007bff; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold;"
+        )
+      },
       hr(),
       p(strong("Season: "), ep$season, " | ", strong("Episode: "), ep$episode),
       p(strong("Aired: "), format(ep$aired_date, "%B %d, %Y")),
@@ -251,7 +275,7 @@ server <- function(input, output, session) {
         target = "_blank",
         class = "btn btn-info btn-block",
         icon("external-link-alt"),
-        " View on Fandom Wiki"
+        " View at Fandom Wiki"
       ),
       # IMDB Episode Link
       if (nrow(imdb_ep) > 0 && !is.na(imdb_ep$imdb_episode_url)) {
@@ -261,9 +285,24 @@ server <- function(input, output, session) {
           class = "btn btn-warning btn-block",
           style = "margin-top: 10px;",
           icon("imdb"),
-          " View on IMDB"
+          " View at IMDB"
         )
       },
+      # TMDB Episode Link
+      tags$a(
+        href = paste0(
+          "https://www.themoviedb.org/tv/32726-bob-s-burgers/season/",
+          ep$season,
+          "/episode/",
+          ep$episode,
+          "?language=en-US"
+        ),
+        target = "_blank",
+        class = "btn btn-success btn-block",
+        style = "margin-top: 10px;",
+        icon("film"),
+        " View at TMDB"
+      ),
       hr(),
       tags$p(
         style = "font-size: 0.8em; color: #666; text-align: center;",
