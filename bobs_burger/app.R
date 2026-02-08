@@ -47,7 +47,11 @@ server <- function(input, output, session) {
       aes(x = factor(episode), y = factor(season), fill = rating)
     ) +
       geom_tile(color = "white") +
-      scale_fill_viridis_c(option = "C", name = "Rating", na.value = "grey50") +
+      scale_fill_viridis_c(
+        option = "C",
+        name = "Rating",
+        na.value = "grey50"
+      ) +
       scale_y_discrete(limits = rev) +
       labs(
         title = "Click on a cell to see episode details",
@@ -114,7 +118,7 @@ server <- function(input, output, session) {
       p(strong("Season: "), ep$season, " | ", strong("Episode: "), ep$episode),
       p(strong("Aired: "), format(ep$aired_date, "%B %d, %Y")),
       p(
-        strong("Rating: "),
+        strong("TMDB Rating: "),
         span(
           sprintf("%.1f", ep$rating),
           style = "font-size: 1.5em; font-weight: bold; color: #E69F00;"
@@ -162,6 +166,17 @@ server <- function(input, output, session) {
         "View Script",
         icon = icon("scroll"),
         class = "btn-primary btn-block"
+      ),
+      hr(),
+      tags$a(
+        href = paste0(
+          "https://bobs-burgers.fandom.com/wiki/",
+          gsub(" ", "_", ep$title)
+        ),
+        target = "_blank",
+        class = "btn btn-info btn-block",
+        icon("external-link-alt"),
+        " View on Fandom Wiki"
       )
     )
   })
