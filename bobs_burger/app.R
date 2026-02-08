@@ -62,14 +62,6 @@ ui <- fluidPage(
       ),
       plotOutput("heatmap", click = "plot_click", height = "600px"),
       tags$p(
-        tags$a(
-          href = "https://github.com/poncest/bobsburgersR",
-          "Data source: bobsburgersR",
-          target = "_blank"
-        ),
-        style = "text-align: right; font-size: 0.85em; color: #666; margin-top: 5px;"
-      ),
-      tags$p(
         style = "text-align: left; font-size: 1.7em; color: #666; margin-top: 15px;",
         "A Shiny for R app by ",
         tags$a(
