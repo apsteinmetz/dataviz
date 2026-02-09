@@ -4,6 +4,7 @@ library(ggplot2)
 library(dplyr)
 library(readr)
 library(scales)
+library(stringr)
 
 # Load episode data from combined CSV
 eps <- read_csv("www/burgers.csv", show_col_types = FALSE)
@@ -44,15 +45,32 @@ ui <- fluidPage(
 
     mainPanel(
       width = 8,
-      radioButtons(
-        "rating_source",
-        label = NULL,
-        choices = c(
-          "IMDB Rating" = "imdb_rating",
-          "TMDB Rating" = "tmdb_rating"
+      fluidRow(
+        column(
+          6,
+          radioButtons(
+            "rating_source",
+            label = NULL,
+            choices = c(
+              "IMDB Rating" = "imdb_rating",
+              "TMDB Rating" = "tmdb_rating",
+              "Word Count" = "word_count"
+            ),
+            selected = "imdb_rating",
+            inline = TRUE
+          )
         ),
-        selected = "imdb_rating",
-        inline = TRUE
+        column(
+          6,
+          conditionalPanel(
+            condition = "input.rating_source == 'word_count'",
+            textInput(
+              "search_word",
+              label = "Word to count:",
+              value = "fart"
+            )
+          )
+        )
       ),
       checkboxInput(
         "filter_holiday",
@@ -102,24 +120,60 @@ server <- function(input, output, session) {
   # Episode data already includes IMDB ratings from burgers.csv
   eps_with_imdb <- eps
 
+  # Reactive to compute word counts from transcripts
+  word_counts <- reactive({
+    # Only compute if we're in word_count mode
+    req(input$rating_source == "word_count")
+
+    search_word <- input$search_word
+    if (is.null(search_word) || trimws(search_word) == "") {
+      search_word <- "fart"
+    }
+    search_word <- tolower(trimws(search_word))
+
+    trans |>
+      mutate(
+        count = stringr::str_count(
+          tolower(raw_text),
+          stringr::fixed(search_word)
+        )
+      ) |>
+      summarise(word_count = sum(count, na.rm = TRUE), .by = c(season, episode))
+  })
+
   output$heatmap <- renderPlot({
     ep <- selected_episode()
     rating_col <- input$rating_source
+
     rating_label <- if (rating_col == "imdb_rating") {
       "IMDB Rating"
-    } else {
+    } else if (rating_col == "tmdb_rating") {
       "TMDB Rating"
+    } else {
+      paste0("'", input$search_word, "' Count")
     }
 
     # Create plot data with holiday filtering
-    plot_data <- eps_with_imdb |>
-      mutate(
-        display_rating = if (input$filter_holiday) {
-          ifelse(is_holiday, .data[[rating_col]], NA_real_)
-        } else {
-          .data[[rating_col]]
-        }
-      )
+    if (rating_col == "word_count") {
+      plot_data <- eps_with_imdb |>
+        left_join(word_counts(), by = c("season", "episode")) |>
+        mutate(
+          display_rating = if (input$filter_holiday) {
+            ifelse(is_holiday, word_count, NA_real_)
+          } else {
+            word_count
+          }
+        )
+    } else {
+      plot_data <- eps_with_imdb |>
+        mutate(
+          display_rating = if (input$filter_holiday) {
+            ifelse(is_holiday, .data[[rating_col]], NA_real_)
+          } else {
+            .data[[rating_col]]
+          }
+        )
+    }
 
     p <- ggplot(
       plot_data,
@@ -204,24 +258,32 @@ server <- function(input, output, session) {
       {
         # Determine rating percentile based on selected rating source
         rating_col <- input$rating_source
-        current_rating <- ep[[rating_col]]
-        all_ratings <- eps[[rating_col]]
-        all_ratings <- all_ratings[!is.na(all_ratings)]
 
-        # Calculate percentile
-        percentile <- sum(all_ratings <= current_rating) / length(all_ratings)
+        # Skip rating badge for word_count since it's not a real rating
+        if (rating_col == "word_count") {
+          rating_badge <- NULL
+        } else {
+          current_rating <- ep[[rating_col]]
+          all_ratings <- eps[[rating_col]]
+          all_ratings <- all_ratings[!is.na(all_ratings)]
 
-        # Viridis "C" (plasma) colors: low = #0D0887 (dark purple), high = #F0F921 (bright yellow)
-        rating_badge <- if (!is.na(current_rating) && percentile >= 0.90) {
-          tags$span(
-            "Top 10% Rated",
-            style = "background-color: #F0F921; color: black; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; margin-left: 8px;"
-          )
-        } else if (!is.na(current_rating) && percentile <= 0.10) {
-          tags$span(
-            "Bottom 10% Rated",
-            style = "background-color: #0D0887; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; margin-left: 8px;"
-          )
+          # Calculate percentile
+          percentile <- sum(all_ratings <= current_rating) / length(all_ratings)
+
+          # Viridis "C" (plasma) colors: low = #0D0887 (dark purple), high = #F0F921 (bright yellow)
+          rating_badge <- if (!is.na(current_rating) && percentile >= 0.90) {
+            tags$span(
+              "Top 10% Rated",
+              style = "background-color: #F0F921; color: black; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; margin-left: 8px;"
+            )
+          } else if (!is.na(current_rating) && percentile <= 0.10) {
+            tags$span(
+              "Bottom 10% Rated",
+              style = "background-color: #0D0887; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; margin-left: 8px;"
+            )
+          } else {
+            NULL
+          }
         }
 
         tagList(
@@ -265,6 +327,28 @@ server <- function(input, output, session) {
       ),
       p(strong("Synopsis:")),
       p(ep$synopsis, style = "font-size: 0.9em;"),
+      # Word count display (only when word_count mode is selected)
+      if (input$rating_source == "word_count") {
+        word_count_data <- word_counts() |>
+          filter(season == ep$season, episode == ep$episode)
+        count_val <- if (nrow(word_count_data) > 0) {
+          word_count_data$word_count
+        } else {
+          0
+        }
+        p(
+          span(
+            paste0(
+              "'",
+              input$search_word,
+              "' is uttered ",
+              count_val,
+              " time(s)"
+            ),
+            style = "font-size: 1.2em; font-weight: bold; color: #9B59B6;"
+          )
+        )
+      },
       hr(),
       p(strong("Directed by: "), ep$directed_by),
       p(strong("Written by: "), ep$written_by),
