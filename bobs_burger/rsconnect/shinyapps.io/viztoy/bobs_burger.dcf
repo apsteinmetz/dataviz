@@ -1,0 +1,13 @@
+name: bobs_burger
+title: bobs_burger
+username: viztoy
+account: viztoy
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16624420
+bundleId: 11554785
+url: https://viztoy.shinyapps.io/bobs_burger/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .posit/publish/bobs_burger-Q5JR.toml|.posit/publish/deployments/deployment-MTEK.toml|.Rprofile|agents/scrape_instructions_1.md|agents/scrape_instructions_2.md|agents/scratchpad.txt|banner.png|chromote_example.R|Imdb.html|renv.lock|sample.html|scrape_bobs_burgers.R|scrape_imdb_2.R

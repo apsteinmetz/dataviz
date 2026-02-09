@@ -4,18 +4,14 @@ library(ggplot2)
 library(dplyr)
 library(readr)
 library(scales)
-library(bobsburgersR)
 
-eps <- bobsburgersR::episode_data
-trans <- bobsburgersR::transcript_data
-guest_stars <- read_csv(
-  "bobs_burgers_single_episode_cast.csv",
-  show_col_types = FALSE
-)
-imdb_data <- read_csv(
-  "imdb_bob.csv",
-  show_col_types = FALSE
-)
+# Load episode data from combined CSV
+eps <- read_csv("burgers.csv", show_col_types = FALSE)
+
+# Load transcript data from RData file
+load("transcript_data.RData")
+trans <- transcript_data
+
 
 ui <- fluidPage(
   tags$head(
@@ -35,8 +31,8 @@ ui <- fluidPage(
   tags$div(
     style = "text-align: center; margin-bottom: 20px;",
     tags$img(
-      src = "banner.png",
-      style = "max-width: 80%; height: auto;"
+      src = "storefronts.png",
+      style = "max-width: 100%; height: auto;"
     )
   ),
 
@@ -51,7 +47,10 @@ ui <- fluidPage(
       radioButtons(
         "rating_source",
         label = NULL,
-        choices = c("TMDB Rating" = "rating", "IMDB Rating" = "imdb_rating"),
+        choices = c(
+          "IMDB Rating" = "imdb_rating",
+          "TMDB Rating" = "tmdb_rating"
+        ),
         selected = "imdb_rating",
         inline = TRUE
       ),
@@ -71,7 +70,7 @@ ui <- fluidPage(
         ),
         ".",
         tags$br(),
-        "Derived from the ",
+        "Inspired by the ",
         tags$a(
           href = "https://github.com/poncest/bobsburgersR",
           "bobsburgersR",
@@ -83,6 +82,14 @@ ui <- fluidPage(
           "Steven Ponce",
           target = "_blank"
         ),
+        ".",
+        tags$br(),
+        "Source code on ",
+        tags$a(
+          href = "https://github.com/apsteinmetz/dataviz/tree/master/bobs_burger",
+          "GitHub",
+          target = "_blank"
+        ),
         "."
       )
     )
@@ -92,13 +99,8 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   selected_episode <- reactiveVal(NULL)
 
-  # Join episode data with IMDB ratings
-
-  eps_with_imdb <- eps |>
-    left_join(
-      imdb_data |> select(season, episode, imdb_rating, is_holiday),
-      by = c("season", "episode")
-    )
+  # Episode data already includes IMDB ratings from burgers.csv
+  eps_with_imdb <- eps
 
   output$heatmap <- renderPlot({
     ep <- selected_episode()
@@ -131,7 +133,7 @@ server <- function(input, output, session) {
       ) +
       scale_y_discrete(limits = rev) +
       labs(
-        title = "Click on a cell to see episode details",
+        title = "Click on a tile to see episode details",
         x = "Episode",
         y = "Season"
       ) +
@@ -184,54 +186,75 @@ server <- function(input, output, session) {
 
     if (is.null(ep)) {
       return(p(
-        "Click on a cell in the heatmap to see episode details.",
-        style = "color: #666; font-style: italic;"
+        "Click on a tile in the heatmap to see episode details.",
+        style = "color: #000000ff; font-style: italic; font-size: 2em;"
       ))
     }
 
-    # Get IMDB data for this episode
-    imdb_ep <- imdb_data |>
-      filter(season == ep$season, episode == ep$episode)
-
     tagList(
       # Thumbnail image at top
-      if (nrow(imdb_ep) > 0 && !is.na(imdb_ep$thumbnail_url)) {
+      if (!is.na(ep$thumbnail_url)) {
         tags$img(
-          src = imdb_ep$thumbnail_url,
+          src = ep$thumbnail_url,
           style = "width: 100%; max-width: 400px; border-radius: 8px; margin-bottom: 15px;"
         )
       },
       h3(ep$title, class = "episode-title"),
-      # Holiday Episode label
-      if (
-        nrow(imdb_ep) > 0 && !is.na(imdb_ep$is_holiday) && imdb_ep$is_holiday
-      ) {
-        tags$span(
-          "Holiday Episode",
-          style = "background-color: #007bff; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold;"
+      # Holiday Episode label and Rating Rank badge
+      {
+        # Determine rating percentile based on selected rating source
+        rating_col <- input$rating_source
+        current_rating <- ep[[rating_col]]
+        all_ratings <- eps[[rating_col]]
+        all_ratings <- all_ratings[!is.na(all_ratings)]
+
+        # Calculate percentile
+        percentile <- sum(all_ratings <= current_rating) / length(all_ratings)
+
+        # Viridis "C" (plasma) colors: low = #0D0887 (dark purple), high = #F0F921 (bright yellow)
+        rating_badge <- if (!is.na(current_rating) && percentile >= 0.90) {
+          tags$span(
+            "Top 10% Rated",
+            style = "background-color: #F0F921; color: black; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; margin-left: 8px;"
+          )
+        } else if (!is.na(current_rating) && percentile <= 0.10) {
+          tags$span(
+            "Bottom 10% Rated",
+            style = "background-color: #0D0887; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; margin-left: 8px;"
+          )
+        }
+
+        tagList(
+          if (!is.na(ep$is_holiday) && ep$is_holiday) {
+            tags$span(
+              "Holiday Episode",
+              style = "background-color: #007bff; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold;"
+            )
+          },
+          rating_badge
         )
       },
       p(strong("Season: "), ep$season, " | ", strong("Episode: "), ep$episode),
-      p(strong("Aired: "), format(ep$aired_date, "%B %d, %Y")),
-      p(
-        strong("TMDB Rating: "),
-        span(
-          sprintf("%.1f", ep$rating),
-          style = "font-size: 1.5em; font-weight: bold; color: #E69F00;"
-        ),
-        paste0(" (", ep$votes, " votes)")
-      ),
+      p(strong("Aired: "), format(as.Date(ep$aired_date), "%B %d, %Y")),
       # IMDB Rating
-      if (nrow(imdb_ep) > 0 && !is.na(imdb_ep$imdb_rating)) {
+      if (!is.na(ep$imdb_rating)) {
         p(
           strong("IMDB Rating: "),
           span(
-            sprintf("%.1f", imdb_ep$imdb_rating),
+            sprintf("%.1f", ep$imdb_rating),
             style = "font-size: 1.5em; font-weight: bold; color: #F5C518;"
           ),
-          paste0(" (", scales::comma(imdb_ep$imdb_vote_count), " votes)")
+          paste0(" (", scales::comma(ep$imdb_vote_count), " votes)")
         )
       },
+      p(
+        strong("TMDB Rating: "),
+        span(
+          sprintf("%.1f", ep$tmdb_rating),
+          style = "font-size: 1.5em; font-weight: bold; color: #E69F00;"
+        ),
+        paste0(" (", ep$tmdb_vote_count, " votes)")
+      ),
       p(
         strong("US Viewers: "),
         if (!is.na(ep$us_viewers_millions)) {
@@ -246,16 +269,17 @@ server <- function(input, output, session) {
       p(strong("Directed by: "), ep$directed_by),
       p(strong("Written by: "), ep$written_by),
       {
-        guests <- guest_stars |>
-          filter(Season == ep$season, Episode == ep$episode)
-        if (nrow(guests) > 0) {
+        # Guest star data is in eps as semicolon-separated strings
+        if (!is.na(ep$guest_actors) && nchar(ep$guest_actors) > 0) {
+          actors <- strsplit(ep$guest_actors, "; ")[[1]]
+          characters <- strsplit(ep$guest_characters, "; ")[[1]]
           tagList(
             p(strong(
               "Super special guest star because they only appear in one episode:"
             )),
-            lapply(seq_len(nrow(guests)), function(i) {
+            lapply(seq_along(actors), function(i) {
               p(
-                paste0(guests$Actor[i], " as ", guests$`Character(s)`[i]),
+                paste0(actors[i], " as ", characters[i]),
                 style = "margin-left: 10px; font-size: 0.9em;"
               )
             })
@@ -280,9 +304,9 @@ server <- function(input, output, session) {
         " View at Fandom Wiki"
       ),
       # IMDB Episode Link
-      if (nrow(imdb_ep) > 0 && !is.na(imdb_ep$imdb_episode_url)) {
+      if (!is.na(ep$imdb_episode_url)) {
         tags$a(
-          href = imdb_ep$imdb_episode_url,
+          href = ep$imdb_episode_url,
           target = "_blank",
           class = "btn btn-warning btn-block",
           style = "margin-top: 10px;",
