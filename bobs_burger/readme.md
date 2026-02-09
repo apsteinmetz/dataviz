@@ -1,6 +1,6 @@
 ---
 title: "Bob's Burger Data Visualization"
-date: today
+date: "2026-02-09"
 author: "Art Steinmetz"
 ---
 
