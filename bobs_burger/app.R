@@ -6,10 +6,10 @@ library(readr)
 library(scales)
 
 # Load episode data from combined CSV
-eps <- read_csv("burgers.csv", show_col_types = FALSE)
+eps <- read_csv("www/burgers.csv", show_col_types = FALSE)
 
 # Load transcript data from RData file
-load("transcript_data.RData")
+load("www/transcript_data.RData")
 trans <- transcript_data
 
 
