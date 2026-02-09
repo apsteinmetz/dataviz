@@ -45,29 +45,36 @@ ui <- fluidPage(
 
     mainPanel(
       width = 8,
-      fluidRow(
-        column(
-          6,
-          radioButtons(
-            "rating_source",
-            label = NULL,
-            choices = c(
-              "IMDB Rating" = "imdb_rating",
-              "TMDB Rating" = "tmdb_rating",
-              "Word Count" = "word_count"
-            ),
-            selected = "imdb_rating",
-            inline = TRUE
-          )
+      tags$fieldset(
+        style = "border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-bottom: 10px; background-color: #f5f5f5;",
+        tags$legend(
+          "Choose Rating",
+          style = "font-weight: bold; padding: 0 5px; background-color: #f5f5f5;"
         ),
-        column(
-          6,
-          conditionalPanel(
-            condition = "input.rating_source == 'word_count'",
-            textInput(
-              "search_word",
-              label = "Word to count:",
-              value = "fart"
+        fluidRow(
+          column(
+            6,
+            radioButtons(
+              "rating_source",
+              label = NULL,
+              choices = c(
+                "IMDB Rating" = "imdb_rating",
+                "TMDB Rating" = "tmdb_rating",
+                "Word Count" = "word_count"
+              ),
+              selected = "imdb_rating",
+              inline = TRUE
+            )
+          ),
+          column(
+            6,
+            conditionalPanel(
+              condition = "input.rating_source == 'word_count'",
+              textInput(
+                "search_word",
+                label = "Word to count:",
+                value = "Hamburger"
+              )
             )
           )
         )
