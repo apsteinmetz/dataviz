@@ -1,4 +1,4 @@
-options(shiny.minified = TRUE) # TRUE for production, FALSE for development (makes it easier to debug)
+options(shiny.minified = FALSE) # TRUE for production, FALSE for development (makes it easier to debug)
 library(shiny)
 library(ggplot2)
 library(dplyr)
@@ -12,6 +12,9 @@ eps <- read_csv("www/burgers.csv", show_col_types = FALSE)
 # Load transcript data from RData file
 load("www/transcript_data.RData")
 trans <- transcript_data
+
+# Load most unique n-grams data
+ngrams <- read_csv("www/most_unique_words.csv", show_col_types = FALSE)
 
 
 ui <- fluidPage(
@@ -142,7 +145,7 @@ server <- function(input, output, session) {
       mutate(
         count = stringr::str_count(
           tolower(raw_text),
-          stringr::fixed(search_word)
+          stringr::regex(paste0("\\b", search_word, "\\b"))
         )
       ) |>
       summarise(word_count = sum(count, na.rm = TRUE), .by = c(season, episode))
@@ -334,6 +337,21 @@ server <- function(input, output, session) {
       ),
       p(strong("Synopsis:")),
       p(ep$synopsis, style = "font-size: 0.9em;"),
+      # Most unique word in episode
+      {
+        unique_data <- ngrams |>
+          filter(season == ep$season, episode == ep$episode, n_gram == 1)
+        if (nrow(unique_data) > 0) {
+          p(
+            strong("Most Unique Word in Episode: "),
+            span(
+              unique_data$ngram,
+              style = "font-size: 1.2em; font-weight: bold; color: #2E86AB;"
+            ),
+            paste0(" (", unique_data$occurrences, " times)")
+          )
+        }
+      },
       # Word count display (only when word_count mode is selected)
       if (input$rating_source == "word_count") {
         word_count_data <- word_counts() |>
