@@ -1,0 +1,615 @@
+season,episode,title,ngram,occurrences,tf_idf,n_gram
+1,1,Human Flesh,flesh,9,0.018257750523657374,1
+1,2,Crawl Space,ok,24,0.03412218095430743,1
+1,3,Sacred Cow,cow,39,0.061126373647114866,1
+1,4,Sexy Dance Fighting,jairo,18,0.03125443608364627,1
+1,5,Hamburger Dinner Theater,robbery,11,0.02052287110352104,1
+1,6,"Sheesh! Cab, Bob?",party,35,0.018533770513239012,1
+1,7,Bed & Breakfast,b,20,0.014310010875758982,1
+1,8,Art Crawl,paintings,17,0.03151712907380458,1
+1,9,Spaghetti Western and Meatballs,choo,16,0.026204676755150973,1
+1,10,Burger War,ding,26,0.027661291434477514,1
+1,11,Weekend at Mort's,la,28,0.020800283577754167,1
+1,12,Lobsterfest,lobster,25,0.045121016197806126,1
+1,13,Torpedo,torpedo,31,0.05053261579593419,1
+2,1,The Belchies,taffy,17,0.03592487516936618,1
+2,2,Bob Day Afternoon,mickey,30,0.032481194818260534,1
+2,3,Synchronized Swimming,independent,13,0.02227301135852766,1
+2,4,Burgerboss,sux,9,0.017834473954423797,1
+2,5,Food Truckin',truck,26,0.02449116387608478,1
+2,6,Dr. Yap,yap,19,0.024019641917897055,1
+2,7,Moody Foodie,hanky,13,0.02532279616280053,1
+2,8,Bad Tina,fiction,15,0.023873291569390068,1
+2,9,Beefsquatch,beefsquatch,23,0.04420050274983407,1
+3,1,Ear-sy Rider,ears,29,0.034088849494659595,1
+3,2,Full Bars,francis,16,0.028651443995886167,1
+3,3,Bob Fires the Kids,mickey,20,0.02282329887003542,1
+3,4,Mutiny on the Windbreaker,clackety,18,0.04120034350782156,1
+3,5,An Indecent Thanksgiving Proposal,lance,19,0.033150887616470635,1
+3,6,The Deepening,shark,64,0.09019008807530397,1
+3,7,Tina-Rannosaurus Wrecks,chase,11,0.017052881502094167,1
+3,8,The Unbearable Like-Likeness of Gene,courtney,30,0.035700841236523714,1
+3,9,God Rest Ye Merry Gentle-Mannequins,chet,27,0.05149013958869608,1
+3,10,Mother Daughter Laser Razor,dakota,9,0.017507347054444556,1
+3,11,Nude Beach,sex,30,0.027462522020224433,1
+3,12,Broadcast Wagstaff School News,pooper,21,0.03585743280446821,1
+3,13,My Fuzzy Valentine,valentine's,20,0.021378698790133117,1
+3,14,Lindapendant Woman,grind,12,0.015386464431511798,1
+3,15,O.T. The Outside Toilet,toilet,44,0.037551785725028194,1
+3,16,Topsy,edison,20,0.039305749811854473,1
+3,17,Two For Tina,dance,50,0.025827201834426956,1
+3,18,It Snakes a Village,bitsy,24,0.04713454936285759,1
+3,19,Family Fracas,fracas,20,0.03383661889268654,1
+3,20,The Kids Run the Restaurant,scissors,13,0.018182853117542502,1
+3,21,Boyz 4 Now,boo,33,0.030565742129788603,1
+3,22,Carpe Museum,weina,25,0.04532168207967076,1
+3,23,The Unnatural,baseball,28,0.03369494550276941,1
+4,1,A River Runs Through Bob,nature,13,0.018831630975257634,1
+4,2,Fort Night,millie,25,0.027325488506947566,1
+4,3,Seaplane!,quicky,21,0.03797404568971618,1
+4,4,My Big Fat Greek Bob,yap,45,0.04968190261535627,1
+4,5,Turkey in a Can,turkey,36,0.031924312190404876,1
+4,6,Purple Rain-Union,pimple,12,0.02176129606429587,1
+4,7,Bob and Deliver,ec,25,0.03496596670621875,1
+4,8,Christmas In The Car,christmas,42,0.03267527224250679,1
+4,9,Slumber Party,slumber,26,0.03796815049106717,1
+4,10,Presto Tina-o,magic,37,0.03883710334490422,1
+4,11,"Easy Commercial, Easy Gommercial",commercial,33,0.03871069075784962,1
+4,12,The Frond Files,brownie,8,0.01780597822802082,1
+4,13,Mazel Tina,janet,27,0.0449621660903909,1
+4,14,Uncle Teddy,burgerbob,10,0.016638139882589182,1
+4,15,The Kids Rob a Train,ethan,15,0.02678600443211972,1
+4,16,I Get Psy-chic Out of You,psychic,28,0.041151420693945416,1
+4,17,The Equestranauts,chariot,25,0.03926443500021257,1
+4,18,Ambergris,ambergris,19,0.03202180906537867,1
+4,19,The Kids Run Away,gayle,25,0.016599733448353058,1
+4,20,Gene It On,cheer,27,0.03394505818294156,1
+4,21,Wharf Horse,wharf,30,0.022871611047290796,1
+4,22,World Wharf II: The Wharfening (or How Bob Saves/Destroys the Town -- Part II),felix,21,0.019454198661742157,1
+5,1,"Work Hard or Die Trying, Girl",musical,32,0.036181221038582616,1
+5,2,Tina and the Real Ghost,jeff,52,0.0744460834713928,1
+5,3,Friends With Burger-fits,ice,13,0.008523645141643311,1
+5,4,Dawn Of The Peck,birds,21,0.022748976825832386,1
+5,5,Best Burger,garlic,35,0.047476037825957815,1
+5,6,Father Of The Bob,henry,24,0.023583228309026576,1
+5,7,Tina Tailor Soldier Spy,troop,43,0.0504124780499952,1
+5,8,Midday Run,hall,25,0.023964673993193353,1
+5,9,Speakeasy Rider,kart,18,0.03010609213100746,1
+5,10,Late Afternoon In The Garden Of Bob And Louise,logan,36,0.034666326086994784,1
+5,11,Can't Buy Me Math,rosa,24,0.03704699351538888,1
+5,12,The Millie-churian Candidate,millie,44,0.0468982679894576,1
+5,13,The Gayle Tales,gayle,28,0.021033858272610333,1
+5,14,L'il Hard Dad,sheldon,21,0.03300323894054093,1
+5,15,Adventures In Chinchilla-sitting,chinchilla,20,0.028247477929445854,1
+5,16,The Runaway Club,fashion,21,0.025179268065875077,1
+5,17,Itty Bitty Ditty Committee,band,30,0.02354098208599775,1
+5,18,"Eat, Spray, Linda",birthday,29,0.01870791622358116,1
+5,19,Housetrap,larry,29,0.036119168005558006,1
+5,20,Hawk & Chick,chick,25,0.039375004435444706,1
+5,21,The Oeder Games,rent,33,0.026680524169063292,1
+6,1,Sliding Bobs,fate,17,0.020172063305069498,1
+6,2,The Land Ship,ship,29,0.0295019658298281,1
+6,3,The Hauntening,haunted,15,0.017375632346194318,1
+6,4,Gayle Makin' Bob Sled,gayle,35,0.022885343451839665,1
+6,5,Nice-Capades,santa,43,0.039928727929515365,1
+6,6,"The Cook, the Steve, the Gayle, & Her Lover",steve,25,0.02630766489376485,1
+6,7,The Gene and Courtney Show,carnations,16,0.028403460620395272,1
+6,8,Sexy Dance Healing,jairo,29,0.04230000476493488,1
+6,9,Sacred Couch,couch,90,0.07638130200553503,1
+6,10,Lice Things Are Lice,lice,30,0.044903662506933555,1
+6,11,House of 1000 Bounces,pigeon,40,0.041840048246714785,1
+6,12,Stand by Gene,butted,34,0.05661902396567743,1
+6,13,Wag the Hog,kenny,23,0.03389539325643477,1
+6,14,The Hormone-iums,shoe,23,0.023486474515381293,1
+6,15,Pro Tiki Con Tiki,â,60,0.04680306273620135,1
+6,16,Bye Bye Boo Boo,boo,132,0.09878374325754166,1
+6,17,The Horse Rider-Er,camp,63,0.0642143312650631,1
+6,18,Secret Admiral-irer,meryl,31,0.05042098272513578,1
+6,19,"Glued, Where's My Bob?",coasters,25,0.0340575139852994,1
+7,1,Flu-ouise,kuchi,29,0.03822809123003519,1
+7,2,Sea Me Now,denise,21,0.02937141203322375,1
+7,3,Teen-a Witch,â,43,0.03687735639172002,1
+7,4,"They Serve Horses, Dont They",jack,33,0.03689234986697045,1
+7,5,"Large Brother, Where Fart Thou?",joe,14,0.01868052487259216,1
+7,6,The Quirkducers,quirky,19,0.03274454023597856,1
+7,7,The Last Gingerbread House on the Left,â,35,0.030475314141036793,1
+7,8,Ex MachTina,banjo,21,0.0296681760187121,1
+7,9,Bob Actually,hip,15,0.02030826600031491,1
+7,10,There's No Business Like Mr. Business Business,cat,93,0.05998312241446694,1
+7,11,A Few 'Gurt Men,yogurt,38,0.04094489277406999,1
+7,12,Like Gene For Chocolate,chunky,23,0.028957947648296796,1
+7,13,The Grand Mama-Pest Hotel,bernadette,14,0.023685633224880577,1
+7,14,Aquaticism,church,18,0.025036366456615233,1
+7,15,Ain't Miss Debatin',meat,39,0.030768155185551142,1
+7,16,Eggs for Days,egg,48,0.04355129975193886,1
+7,17,Zero Larp Thirty,winthorpe,22,0.038970198096788845,1
+7,18,The Laser-inth,nick,17,0.023367984200066673,1
+7,19,Thelma & Louise Except Thelma is Linda,bake,13,0.016252582648824457,1
+7,20,"Mom, Lies and Videotapes",alien,14,0.021168015819950092,1
+7,21,Paraders of the Lost Float,float,41,0.04479139905961267,1
+7,22,Into the Mild,pew,46,0.052816746351657125,1
+8,1,Brunchsquatch,brunch,41,0.04857060285075316,1
+8,2,The Silence of the Louise,millie,29,0.030230002849760924,1
+8,3,The Wolf of Wharf Street,wolf,52,0.07344344261655922,1
+8,4,Sit Me Baby One More Time,kendra,22,0.03587433099285829,1
+8,5,Thanks-Hoarding,waffle,13,0.017874914938447433,1
+8,6,Bleakening Pts 1 & 2,bleaken,38,0.02942802088009648,1
+8,8,V for Valentine-detta,hup,18,0.026270400175845324,1
+8,9,Y Tu Ga-Ga Tambien,ga,102,0.14995252857382582,1
+8,10,The Secret Ceramics Room of Secrets,ceramics,15,0.023036394801235708,1
+8,11,Sleeping with the Frenemy,brett,16,0.025666544527001442,1
+8,12,The Hurt Soccer,coach,26,0.023433546995490443,1
+8,13,Cheer Up Sleepy Gene,snoring,18,0.01887332507606303,1
+8,14,The Trouble With Doubles,lars,31,0.04741780987585553,1
+8,15,Go Tina on the Mountain,fluffy,25,0.031743727427428585,1
+8,16,"Are You There Bob? It's Me, Birthday",birthday,27,0.01566066489678187,1
+8,17,Boywatch,junior,25,0.02325986916425955,1
+8,18,As I Walk Through the Alley of the Shadow of Ramps,ramps,23,0.03647673724577832,1
+8,19,Mo Mommy Mo Problems,julia,15,0.022458226461126263,1
+8,20,Mission Impos-slug-ble,cards,28,0.025317168873562015,1
+8,21,"Something Old, Something New, Something Bob Caters for You",cake,30,0.025533499785671553,1
+9,1,Just One of the Boyz 4 Now for Now,damon,18,0.02653972179451978,1
+9,2,The Taking of Funtime One Two Three,dune,18,0.03119953373382855,1
+9,3,Tweentrepreneurs,wood,28,0.030227445040452727,1
+9,4,Nightmare on Ocean Avenue Street,candy,52,0.029079916425020835,1
+9,5,Live and Let Fly,kurt,18,0.02701449320408185,1
+9,6,Bobby Driver,colton,20,0.03228211808110032,1
+9,7,I Bob Your Pardon,turkey,36,0.030149296188497366,1
+9,8,Roller? I Hardly Knew Her!,alex,29,0.038283469649498754,1
+9,9,UFO No You Didn't,doo,69,0.06642149068556556,1
+9,10,Better Off Sled,sledding,23,0.03796987552450433,1
+9,11,"Lorenzo's Oil? No, Linda's",angie,18,0.024749142367246797,1
+9,12,The Helen Hunt,helen,26,0.026846574452200917,1
+9,13,"Bed, Bob and Beyond",scottjon,33,0.05566597221513329,1
+9,14,Every Which Way But Goose,bruce,30,0.04225266284577995,1
+9,15,The Fresh Princ-ipal,principal,33,0.03185945688724642,1
+9,16,Roamin' Bob-iday,sandwiches,13,0.01781723840356015,1
+9,17,What About Blob?,blob,37,0.06109958669571115,1
+9,18,"If You Love It So Much, Why Don't You Marionette?",puppet,46,0.0517474351480115,1
+9,19,"Long Time Listener, First Time Bob",clem,45,0.0657251080442295,1
+9,20,The Gene Mile,licky,23,0.03493832843355584,1
+9,21,P.T.A It Ain't So,pta,33,0.04355054751763042,1
+9,22,Yes Without My Zeke,zeke,40,0.017141316501924516,1
+10,1,The Ring (But Not Scary),ring,27,0.020862122506580736,1
+10,2,Boys Just Wanna Have Fungus,mushrooms,15,0.023067324439798056,1
+10,3,"Motor, She Boat",karen,22,0.030199457996891062,1
+10,4,Pig Trouble in Little Tina,pig,34,0.038305088900501806,1
+10,5,Legends of the Mall,p,31,0.02491469434461105,1
+10,6,The Hawkening: Look Who's Hawking Now,chick,17,0.02347679276802833,1
+10,7,Land of the Loft,jen,34,0.033874012740470104,1
+10,8,Now We're Not Cooking with Gas,turkey,30,0.025504876800429007,1
+10,9,All That Gene,jiggly,18,0.023812512537842452,1
+10,10,Have Yourself a Maily Linda Christmas,christmas,36,0.02688073387882145,1
+10,11,Drumforgiven,bluh,37,0.04973215513484868,1
+10,12,A Fish Called Tina,fish,55,0.0352953773137807,1
+10,13,Three Girls and a Little Wharfy,wharfy,44,0.0673566695786786,1
+10,14,Wag the Song,poo,41,0.03781567351233867,1
+10,15,Yurty Rotten Scoundrels,annie,17,0.026269943796271546,1
+10,16,Flat-Top O' the Morning to Ya,green,36,0.02731275262902866,1
+10,17,Just the Trip,snake,35,0.038257535689105504,1
+10,18,Tappy Tappy Tappy Tap Tap Tap,josh,33,0.043348673985359944,1
+10,19,The Handyman Can,handyman,13,0.013737336160121435,1
+10,20,Poops!... I Didn't Do It Again,sharks,15,0.018687357169256076,1
+10,21,Local She-ro,york,45,0.05247336238512867,1
+10,22,Prank You for Being a Friend,kaylee,28,0.03979209934408894,1
+11,1,Dream a Little Bob of Bob,key,29,0.02080521326419095,1
+11,2,Worms of In-rear-ment,worms,30,0.03452272080899745,1
+11,3,Copa-bob-bana,pool,21,0.0181597127377389,1
+11,4,Heartbreak Hotel-oween,roger,24,0.032989845332783735,1
+11,5,Fast Time Capsules at Wagstaff School,capsule,38,0.05963831581482967,1
+11,6,"Bob Belcher and the Terrible, Horrible, No Good, Very Bad Kids",sculpture,15,0.020118707302267193,1
+11,7,Diarrhea of a Poopy Kid,pears,16,0.0266442465720835,1
+11,8,The Terminalator II: Terminals of Endearment,al,20,0.021450428940625665,1
+11,9,Mommy Boy,spa,17,0.021573897121366734,1
+11,10,Yachty or Nice,yacht,30,0.03565624359091435,1
+11,11,Romancing the Beef,valentine's,29,0.02726666807066552,1
+11,12,"Die Card, or Card Trying",camera,21,0.014796120700588196,1
+11,13,An Incon-wheelie-ent Truth,wheelie,40,0.05298632175818159,1
+11,14,Mr. Lonely Farts,ken,24,0.027277633222104053,1
+11,15,Sheshank Redumption,defecation,10,0.014995673599338039,1
+11,16,Y Tu Tina Tambien,rodrigo,37,0.06241336278666459,1
+11,17,Fingers-loose,mavis,11,0.017901484860318038,1
+11,18,Some Kind of Fender Benderful,elaine,11,0.01626525309152057,1
+11,19,Bridge Over Troubled Rudy,bridge,19,0.01900874156314302,1
+11,20,Steal Magazine-olias,yap,49,0.04509818392237234,1
+11,21,Tell Me Dumb Thing Good,trash,63,0.04309332738877904,1
+11,22,Vampire Disco Death Dance,drinking,28,0.02414158748875606,1
+12,1,Manic Pixie Crap Show,wands,40,0.052475377295045623,1
+12,2,Crystal Mess,crystal,57,0.0848091248668408,1
+12,3,The Pumpkinening,gayle,37,0.02233358237793411,1
+12,4,Driving Big Dummy,sink,13,0.01246568318055148,1
+12,5,Seven-tween Again,alex,12,0.014420443144409658,1
+12,6,"Beach, Please",mustache,37,0.02800897027450446,1
+12,7,Loft in Bedslation,loft,24,0.02690425652768992,1
+12,8,Stuck in the Kitchen with You,parade,21,0.020469113062430926,1
+12,9,FOMO You Didn't,pictures,19,0.013192911579958291,1
+12,10,Gene's Christmas Break,percy,24,0.03631290513661631,1
+12,11,Touch of Eval,evaluation,14,0.021935942124821,1
+12,12,Ferry on My Wayward Bob and Linda,ferry,17,0.018309172690976365,1
+12,13,Frigate Me Knot,ship,32,0.026732472541346877,1
+12,14,Video Killed the Gene-io Star,briefcase,25,0.029463435965702597,1
+12,15,Ancient Misbehavin',coins,22,0.031433838340788965,1
+12,16,Interview with a Pop-pop-pire,glam,17,0.025014494272605946,1
+12,17,The Spider House Rules,phoebe,33,0.047531684021724724,1
+12,18,Clear and Present Ginger,ginger,29,0.02923570480135806,1
+12,19,A-Sprout a Boy,purrbo,43,0.06341860755762284,1
+12,20,Sauce Side Story,floppy,27,0.03352489277497182,1
+12,21,Grade Runner,boba,21,0.03944317608491503,1
+12,22,Some Like It Bot Part 2: Judge-bot Day,hammer,9,0.011043278610923692,1
+13,1,"To Bob, or Not to Bob",avenge,12,0.01969116704041443,1
+13,2,The Reeky Lake Show,pillows,14,0.01795878504015167,1
+13,3,What About Job?,wedgie,16,0.021013554864558855,1
+13,4,Comet-y of Errors,comet,25,0.03638403905709782,1
+13,5,So You Stink You Can Dance,scoop,24,0.02913894307818943,1
+13,6,Apple Gore-chard!,harvest,22,0.03314671150931816,1
+13,7,Ready Player Gene,vr,16,0.024791548690853666,1
+13,8,Putts-giving,yeti,28,0.03944692175459816,1
+13,9,Show Mama from the Grave,cemetery,26,0.029776883390013185,1
+13,10,The Plight Before Christmas,poem,19,0.029491307669909893,1
+13,11,Cheaty Cheaty Bang Bang,chelsea,17,0.018059081637284438,1
+13,12,Oh Row You Didn't,quincy,22,0.03233846264037945,1
+13,13,Stop! Or My Mom Will Sleuth!,mash,24,0.035644280586642305,1
+13,14,These Boots Are Made for Stalking,wafty,39,0.06181762030332153,1
+13,15,The Show (And Tell) Must Go On,cannonball,23,0.033396931590898966,1
+13,16,What a (April) Fool Believes,april,42,0.05300951439176484,1
+13,17,Crows Encounters of the Bird Kind,bird,41,0.02887249611562477,1
+13,18,Gift Card or Buy Trying,mitchell,20,0.027143168331233494,1
+13,19,Crab-solutely Fabulous,sea,37,0.029849149081882687,1
+13,20,Radio No You Didn't,alice,35,0.04759036192489298,1
+13,21,Mother Author Laser Pointer,newt,31,0.045474457012090956,1
+13,22,Amelia,wayne,16,0.022297676930353273,1
+14,1,Fight at the Not Okay Chore-ral,sheriffs,22,0.035252000684644194,1
+14,2,The Amazing Rudy,lasagna,10,0.01494123053436406,1
+14,3,The Pickleorette,tea,18,0.01665789645110582,1
+14,4,Running Down a Gene,cricket,32,0.0557527009196198,1
+14,5,Bully-ieve It or Not,zeke,43,0.017270317496688562,1
+14,6,Escape from Which Island?,hubert,12,0.017891739903943337,1
+14,7,The (Raccoon) King and I,king,24,0.021909438472470177,1
+14,8,"Wharf, Me Worry?",pop,34,0.025654125089974802,1
+14,9,Fraud of the Dead: Docu-pocalypse,zombies,23,0.030588912515844544,1
+14,10,The Nightmare 2 Days Before Christmas,tree,41,0.02960750038338003,1
+14,11,Mission Impossi-Bob,beef,37,0.026250620542232084,1
+14,12,Jade in the Shade,flappy,22,0.036635839036614805,1
+14,13,Butt Sweat and Fears,ub,18,0.02746689567188104,1
+14,14,The Big Stieblitzki,paul,32,0.03767718465110068,1
+14,15,The Right Tough Stuff,gayle,59,0.034384654032172016,1
+14,16,To Catch a Beef,joe,23,0.02553266697921945,1
+15,1,The Tina Table: The Tables Have Tina-Ed,tier,9,0.01421054031659354,1
+15,2,Saving Favorite Drive-In,maryanne,10,0.015987849658255716,1
+15,3,Colon-ly the Dronely,drone,13,0.021287608123407374,1
+15,4,For Whom the Doll Toes,sweater,15,0.01907763997905642,1
+15,5,Don't Stop Be-Cheesin,cheese,76,0.047587269552266845,1
+15,6,Hope N' Mic Night,mic,23,0.027698282014776605,1
+15,7,Boogie Days,squirt,36,0.04451849627145956,1
+15,8,"They Slug Horses, Don't They?",spoon,28,0.0393368339143363,1
+15,9,Dog Christmas Day After Afternoon,puppy,37,0.03816003577350783,1
+15,10,Advice Things Are Ad-nice,grader,25,0.030766610337874305,1
+15,11,Mr. Fischoeder's Opus,poof,20,0.031929594462589604,1
+15,12,Like a Candle in the Gym,megan,21,0.029168794676482417,1
+15,13,Snackface,millie,18,0.018421243464178592,1
+15,14,The Place Beyond the Pinecones,thundergirls,24,0.029849507356830663,1
+15,15,The Lost City of Atlantic,mermaid,22,0.028417856571649434,1
+15,16,The Shell Game,ulysses,34,0.06031995768834098,1
+15,17,Wild Steal-ions,francois,18,0.02977563820235978,1
+15,18,"Don't Worry, Be Hoopy",matters,12,0.019595715132890323,1
+15,19,The Dead Bo-ats Society,adventure,10,0.011835038330419939,1
+15,20,Dad-urday Kite Fever,kite,48,0.06320207739064472,1
+15,21,Mr. Safebody,arnold,22,0.029083456182867732,1
+15,22,Insomnibob,skip,14,0.01843075431039219,1
+16,1,Grand Pre-Pre-Pre-Opening,fear,9,0.010531012341728301,1
+16,2,'Til Death Do Us Art,gayle,31,0.022124974646317512,1
+16,3,The Twinnening,mask,30,0.03487522846403967,1
+16,4,The Skids in the Hall,hall,39,0.03748464358558218,1
+16,5,The Secret Guardin',mary,15,0.020562502316287794,1
+16,6,Get Her to the Zeke,rat,31,0.027197239204743474,1
+16,7,Tube for Tina,tube,36,0.039781852856200256,1
+16,8,Les Lizárdables,lizard,39,0.05466419833369001,1
+16,9,It's a Stunterful Life,nebkin,18,0.03194399115480928,1
+16,10,Heist Things Are Heist,trophy,20,0.023245850590420437,1
+1,1,Human Flesh,human flesh,9,0.05275499460418093,2
+1,2,Crawl Space,the wall,12,0.03456638412005711,2
+1,3,Sacred Cow,a cow,11,0.07046456960118475,2
+1,4,Sexy Dance Fighting,dad dad,15,0.054013394264741194,2
+1,5,Hamburger Dinner Theater,dinner theater,13,0.08074731097465679,2
+1,6,"Sheesh! Cab, Bob?",jimmy jr,22,0.03883030679734288,2
+1,7,Bed & Breakfast,bacon burger,7,0.03973036098425211,2
+1,8,Art Crawl,art crawl,14,0.07236089211752775,2
+1,9,Spaghetti Western and Meatballs,choo choo,9,0.05931142661482712,2
+1,10,Burger War,ding ding,15,0.06733611239940476,2
+1,11,Weekend at Mort's,la la,25,0.06565619502169011,2
+1,12,Lobsterfest,shell pile,9,0.06378914570332274,2
+1,13,Torpedo,mascot race,9,0.0486241789889479,2
+2,1,The Belchies,taffy butt,9,0.05408355690271225,2
+2,2,Bob Day Afternoon,a hostage,7,0.03191714509005603,2
+2,3,Synchronized Swimming,independent study,11,0.05675254524635961,2
+2,4,Burgerboss,bob sux,9,0.05483152098753699,2
+2,5,Food Truckin',food truck,10,0.06384445649484055,2
+2,6,Dr. Yap,dr yap,17,0.07379556736514584,2
+2,7,Moody Foodie,overdone and,12,0.07026807052254229,2
+2,8,Bad Tina,friend fiction,13,0.07083636605007951,2
+2,9,Beefsquatch,beefsquatch beefsquatch,9,0.04989509170211498,2
+3,1,Ear-sy Rider,horny dave,9,0.056084471956784294,2
+3,2,Full Bars,trick or,11,0.04382150662839814,2
+3,3,Bob Fires the Kids,fun fun,22,0.11953572148663978,2
+3,4,Mutiny on the Windbreaker,clackety clackety,13,0.10789713147628052,2
+3,5,An Indecent Thanksgiving Proposal,the turkey,12,0.04444436310914138,2
+3,6,The Deepening,the shark,29,0.17295890573908804,2
+3,7,Tina-Rannosaurus Wrecks,a butterfly,5,0.020388702462198625,2
+3,8,The Unbearable Like-Likeness of Gene,break up,19,0.0748371273528846,2
+3,9,God Rest Ye Merry Gentle-Mannequins,a mannequin,13,0.07691014537048922,2
+3,10,Mother Daughter Laser Razor,mama dada,5,0.02951983375044947,2
+3,11,Nude Beach,sex sex,14,0.07039145607218679,2
+3,12,Broadcast Wagstaff School News,mad pooper,18,0.10583496864124183,2
+3,13,My Fuzzy Valentine,valentine's day,16,0.04710089301419153,2
+3,14,Lindapendant Woman,fresh feed,10,0.05565449706110007,2
+3,15,O.T. The Outside Toilet,a toilet,11,0.05619270424736199,2
+3,16,Topsy,mr dinkler,12,0.07019629516960812,2
+3,17,Two For Tina,the dance,14,0.04122517630798004,2
+3,18,It Snakes a Village,afraid of,12,0.043768874470888335,2
+3,19,Family Fracas,family fracas,15,0.06105381394016201,2
+3,20,The Kids Run the Restaurant,being girls,18,0.08116792083194452,2
+3,21,Boyz 4 Now,boo boo,16,0.05477591728808501,2
+3,22,Carpe Museum,a dork,17,0.08086080706726109,2
+3,23,The Unnatural,the deuce,12,0.05779829518170426,2
+4,1,A River Runs Through Bob,nature master,8,0.04157421232368201,2
+4,2,Fort Night,trick or,13,0.034370862332031994,2
+4,3,Seaplane!,quicky kiss,20,0.10290831532052466,2
+4,4,My Big Fat Greek Bob,pranking pranking,23,0.11656415769425267,2
+4,5,Turkey in a Can,the toilet,12,0.027105694963908748,2
+4,6,Purple Rain-Union,bad hair,11,0.051976340943448156,2
+4,7,Bob and Deliver,home ec,24,0.10241754541139547,2
+4,8,Christmas In The Car,the jungle,7,0.031993562835682665,2
+4,9,Slumber Party,slumber party,19,0.0866307162803603,2
+4,10,Presto Tina-o,shoop shoop,9,0.05324548525649253,2
+4,11,"Easy Commercial, Easy Gommercial",super bowl,12,0.05174862422518551,2
+4,12,The Frond Files,from your,16,0.06784609409109119,2
+4,13,Mazel Tina,bat mitzvah,22,0.0962495419762554,2
+4,14,Uncle Teddy,the lighthouse,7,0.030349615821869732,2
+4,15,The Kids Rob a Train,the chocolate,12,0.050253250253183876,2
+4,16,I Get Psy-chic Out of You,boy bandit,11,0.05347650698086517,2
+4,17,The Equestranauts,the equestranauts,8,0.043221492434620354,2
+4,18,Ambergris,it's felix,9,0.04136567393923336,2
+4,19,The Kids Run Away,force winds,8,0.03764567130706456,2
+4,20,Gene It On,a cheerleader,8,0.04246040962066504,2
+4,21,Wharf Horse,clop clop,7,0.032832050968968365,2
+4,22,World Wharf II: The Wharfening (or How Bob Saves/Destroys the Town -- Part II),are bad,6,0.03256975022324472,2
+5,1,"Work Hard or Die Trying, Girl",die hard,20,0.0962495419762554,2
+5,2,Tina and the Real Ghost,a ghost,19,0.05603573663970811,2
+5,3,Friends With Burger-fits,best friend,17,0.03864289908852353,2
+5,4,Dawn Of The Peck,the turkeys,7,0.03637743578322176,2
+5,5,Best Burger,black garlic,30,0.13256592008303697,2
+5,6,Father Of The Bob,christmas magic,12,0.04444768712606845,2
+5,7,Tina Tailor Soldier Spy,the mole,21,0.09194480328695041,2
+5,8,Midday Run,hall monitor,10,0.035902013122144805,2
+5,9,Speakeasy Rider,a league,9,0.04277313670397077,2
+5,10,Late Afternoon In The Garden Of Bob And Louise,employee of,8,0.02922322535284326,2
+5,11,Can't Buy Me Math,cupid's couple,9,0.035110101994744396,2
+5,12,The Millie-churian Candidate,fast song,8,0.04131179619539908,2
+5,13,The Gayle Tales,jo gene,7,0.04180180837654888,2
+5,14,L'il Hard Dad,shibba dabba,10,0.038747278400454645,2
+5,15,Adventures In Chinchilla-sitting,the chinchilla,9,0.040235464268762504,2
+5,16,The Runaway Club,cotton candy,11,0.04172999184271309,2
+5,17,Itty Bitty Ditty Committee,and fries,13,0.041797921499314813,2
+5,18,"Eat, Spray, Linda",b m,7,0.03535091202214319,2
+5,19,Housetrap,a killer,5,0.021242016867905035,2
+5,20,Hawk & Chick,hawk amp,16,0.07766558251922472,2
+5,21,The Oeder Games,at bob,11,0.0524087564255068,2
+6,1,Sliding Bobs,a mustache,12,0.042558486978566325,2
+6,2,The Land Ship,land ship,22,0.09827663841413287,2
+6,3,The Hauntening,haunted house,12,0.06146884881131159,2
+6,4,Gayle Makin' Bob Sled,mr business,10,0.035877794255186723,2
+6,5,Nice-Capades,oh bourbon,10,0.0481247709881277,2
+6,6,"The Cook, the Steve, the Gayle, & Her Lover",rib roast,11,0.043686078518348936,2
+6,7,The Gene and Courtney Show,and courtney,10,0.04907324548061009,2
+6,8,Sexy Dance Healing,beh beh,9,0.03955612411994226,2
+6,9,Sacred Couch,the couch,34,0.08147300927653404,2
+6,10,Lice Things Are Lice,nurse liz,10,0.05362216992122844,2
+6,11,House of 1000 Bounces,bounce house,20,0.083339413361378345,2
+6,12,Stand by Gene,butted goat,32,0.13883267266878052,2
+6,13,Wag the Hog,butt phone,18,0.0651189257464116,2
+6,14,The Hormone-iums,wine shoe,11,0.05530757262814676,2
+6,15,Pro Tiki Con Tiki,rip rip,9,0.03355574852101873,2
+6,16,Bye Bye Boo Boo,boo boo,54,0.12904512606198565,2
+6,17,The Horse Rider-Er,restaurant camp,19,0.09536380999487883,2
+6,18,Secret Admiral-irer,the admiral,10,0.04318889704062743,2
+6,19,"Glued, Where's My Bob?",toilet bob,17,0.06538375534518626,2
+7,1,Flu-ouise,kuchi kopi,26,0.08732519733809599,2
+7,2,Sea Me Now,do do,11,0.03480035513931514,2
+7,3,Teen-a Witch,a spell,13,0.05418414899463869,2
+7,4,"They Serve Horses, Dont They",usda prime,7,0.027780966204511693,2
+7,5,"Large Brother, Where Fart Thou?",our eyes,8,0.03780097523159866,2
+7,6,The Quirkducers,half day,12,0.048091093751606966,2
+7,7,The Last Gingerbread House on the Left,ang ang,10,0.049115332312068584,2
+7,8,Ex MachTina,the robot,11,0.046027187229675616,2
+7,9,Bob Actually,hip hop,13,0.05916646236107981,2
+7,10,There's No Business Like Mr. Business Business,mr business,34,0.11752054189936444,2
+7,11,A Few 'Gurt Men,the jury,13,0.05560046356880773,2
+7,12,Like Gene For Chocolate,chunky blast,19,0.0765190627314745,2
+7,13,The Grand Mama-Pest Hotel,bachelor party,9,0.04217809306733615,2
+7,14,Aquaticism,a church,7,0.02932548224806904,2
+7,15,Ain't Miss Debatin',meat man,17,0.08818515553349851,2
+7,16,Eggs for Days,the egg,14,0.05540834033601988,2
+7,17,Zero Larp Thirty,winthorpe manor,17,0.08989511699813697,2
+7,18,The Laser-inth,dinner dolls,9,0.043977499768161066,2
+7,19,Thelma & Louise Except Thelma is Linda,bake sale,13,0.04456819330810974,2
+7,20,"Mom, Lies and Videotapes",switch back,8,0.04439416858594726,2
+7,21,Paraders of the Lost Float,bah bah,21,0.06478437890249712,2
+7,22,Into the Mild,pew pew,35,0.11178761480968046,2
+8,1,Brunchsquatch,little tiger,12,0.05398442495761694,2
+8,2,The Silence of the Louise,play dates,19,0.08760878196792009,2
+8,3,The Wolf of Wharf Street,the wolf,15,0.0650285512595064,2
+8,4,Sit Me Baby One More Time,demonic voice,10,0.04936937713437239,2
+8,5,Thanks-Hoarding,the waffle,10,0.03519881836255191,2
+8,6,Bleakening Pts 1 & 2,the bleaken,32,0.055516245962675036,2
+8,8,V for Valentine-detta,girl power,12,0.05389974350670303,2
+8,9,Y Tu Ga-Ga Tambien,ga ga,54,0.23412560776870936,2
+8,10,The Secret Ceramics Room of Secrets,ceramics room,10,0.042389694652754974,2
+8,11,Sleeping with the Frenemy,poop poop,7,0.02717923507754498,2
+8,12,The Hurt Soccer,whistle blows,9,0.03474179839205925,2
+8,13,Cheer Up Sleepy Gene,yep yep,13,0.029785999327270718,2
+8,14,The Trouble With Doubles,escape room,11,0.04611663632756893,2
+8,15,Go Tina on the Mountain,fluffy butt,18,0.07596408213453909,2
+8,16,"Are You There Bob? It's Me, Birthday",we forgot,9,0.029189992382811347,2
+8,17,Boywatch,junior guards,12,0.052620346838473483,2
+8,18,As I Walk Through the Alley of the Shadow of Ramps,the ramps,9,0.0420062181974611,2
+8,19,Mo Mommy Mo Problems,mother's day,18,0.04696665211201251,2
+8,20,Mission Impos-slug-ble,those cards,8,0.042342682052400715,2
+8,21,"Something Old, Something New, Something Bob Caters for You",the wedding,8,0.029588247271284358,2
+9,1,Just One of the Boyz 4 Now for Now,boy crazy,6,0.02729236416642032,2
+9,2,The Taking of Funtime One Two Three,dune buggy,15,0.07379958437612366,2
+9,3,Tweentrepreneurs,wood chuck,13,0.06082436333221696,2
+9,4,Nightmare on Ocean Avenue Street,trick or,15,0.04050829958206937,2
+9,5,Live and Let Fly,dice n,12,0.05893839877448231,2
+9,6,Bobby Driver,the quilt,9,0.04412810764407943,2
+9,7,I Bob Your Pardon,drew p,14,0.05830972252088783,2
+9,8,Roller? I Hardly Knew Her!,lift me,7,0.03501129627345884,2
+9,9,UFO No You Didn't,doo doo,46,0.14713118943350245,2
+9,10,Better Off Sled,and sledding,14,0.06765896073098798,2
+9,11,"Lorenzo's Oil? No, Linda's",that that,13,0.04067350141108682,2
+9,12,The Helen Hunt,and teddy,7,0.021084029880081692,2
+9,13,"Bed, Bob and Beyond",paula mccartney,23,0.09742418505510764,2
+9,14,Every Which Way But Goose,bah bah,26,0.08015226423874289,2
+9,15,The Fresh Princ-ipal,yip yip,12,0.061911867541483215,2
+9,16,Roamin' Bob-iday,day off,12,0.04690779181336913,2
+9,17,What About Blob?,the plankton,13,0.06198919293807957,2
+9,18,"If You Love It So Much, Why Don't You Marionette?",puppet battle,30,0.14584501903872318,2
+9,19,"Long Time Listener, First Time Bob",potato fries,13,0.05177261524244337,2
+9,20,The Gene Mile,licky licky,18,0.06993436869509467,2
+9,21,P.T.A It Ain't So,la la,46,0.0748176707899202,2
+9,22,Yes Without My Zeke,wah wah,11,0.042267714684961655,2
+10,1,The Ring (But Not Scary),water park,16,0.05827728587006948,2
+10,2,Boys Just Wanna Have Fungus,woolly neptunes,10,0.044325446962749204,2
+10,3,"Motor, She Boat",open house,9,0.03236528292950411,2
+10,4,Pig Trouble in Little Tina,fetal pig,10,0.050635258599356296,2
+10,5,Legends of the Mall,p p,27,0.1203807930112806,2
+10,6,The Hawkening: Look Who's Hawking Now,amp chick,17,0.06572420095196872,2
+10,7,Land of the Loft,cream truck,11,0.04185735895246456,2
+10,8,Now We're Not Cooking with Gas,heritage turkey,10,0.04345104512585127,2
+10,9,All That Gene,jiggly jiggly,13,0.05003294403133975,2
+10,10,Have Yourself a Maily Linda Christmas,the ottoman,10,0.04599877708905378,2
+10,11,Drumforgiven,bluh bluh,34,0.13290977707710902,2
+10,12,A Fish Called Tina,big fish,29,0.09883366042233602,2
+10,13,Three Girls and a Little Wharfy,fried dough,11,0.036987779717635116,2
+10,14,Wag the Song,pee pee,19,0.0775453912870041,2
+10,15,Yurty Rotten Scoundrels,a yurt,8,0.03356394284300188,2
+10,16,Flat-Top O' the Morning to Ya,irish irish,10,0.04248403373581007,2
+10,17,Just the Trip,snake snake,11,0.05311578855266372,2
+10,18,Tappy Tappy Tappy Tap Tap Tap,a tie,8,0.023931376355436563,2
+10,19,The Handyman Can,walk in,12,0.0350915610950548,2
+10,20,Poops!... I Didn't Do It Again,the aquarium,8,0.026302811584727637,2
+10,21,Local She-ro,new york,44,0.13935848672825865,2
+10,22,Prank You for Being a Friend,the thinkgineers,15,0.06463710776057785,2
+11,1,Dream a Little Bob of Bob,the key,23,0.05272805954485814,2
+11,2,Worms of In-rear-ment,the symphony,16,0.05857397023449892,2
+11,3,Copa-bob-bana,like bananas,9,0.038207286677750016,2
+11,4,Heartbreak Hotel-oween,dream of,6,0.025952482239821138,2
+11,5,Fast Time Capsules at Wagstaff School,time capsule,18,0.07929481496659196,2
+11,6,"Bob Belcher and the Terrible, Horrible, No Good, Very Bad Kids",restaurant on,10,0.03882608642431998,2
+11,7,Diarrhea of a Poopy Kid,chicken parmesan,9,0.03817898498391465,2
+11,8,The Terminalator II: Terminals of Endearment,itch cream,12,0.047558597211796796,2
+11,9,Mommy Boy,no should,11,0.04458267885595128,2
+11,10,Yachty or Nice,the yacht,13,0.059654664037366634,2
+11,11,Romancing the Beef,valentine's day,15,0.04343260668889636,2
+11,12,"Die Card, or Card Trying",the camera,13,0.04237116969432968,2
+11,13,An Incon-wheelie-ent Truth,wheelie mammoth,22,0.07353347441872478,2
+11,14,Mr. Lonely Farts,bun burger,4,0.015374087912985763,2
+11,15,Sheshank Redumption,hold it,19,0.04285967749490769,2
+11,16,Y Tu Tina Tambien,dunk tank,11,0.056957798574556205,2
+11,17,Fingers-loose,dance dance,11,0.042790344851081734,2
+11,18,Some Kind of Fender Benderful,turn signal,6,0.021802719851220294,2
+11,19,Bridge Over Troubled Rudy,breathe in,10,0.04853260803039997,2
+11,20,Steal Magazine-olias,yap yap,24,0.07398670545114727,2
+11,21,Tell Me Dumb Thing Good,trash can,45,0.14808559696059803,2
+11,22,Vampire Disco Death Dance,love parts,9,0.03604309771208725,2
+12,1,Manic Pixie Crap Show,bottle cap,15,0.058160268255794144,2
+12,2,Crystal Mess,the crystal,18,0.07238992939365839,2
+12,3,The Pumpkinening,trick or,17,0.04068040264018076,2
+12,4,Driving Big Dummy,boy ride,12,0.04860125386919827,2
+12,5,Seven-tween Again,bunk beds,10,0.04446310363033538,2
+12,6,"Beach, Please",foot long,12,0.05314939904953315,2
+12,7,Loft in Bedslation,loft bed,16,0.05358563477873322,2
+12,8,Stuck in the Kitchen with You,captain casserole,9,0.036736728245391856,2
+12,9,FOMO You Didn't,better over,11,0.038718700198807104,2
+12,10,Gene's Christmas Break,percy mctinsel,20,0.08663914898013914,2
+12,11,Touch of Eval,ms labonz,17,0.04866052628668104,2
+12,12,Ferry on My Wayward Bob and Linda,power couple,14,0.0590831749935304,2
+12,13,Frigate Me Knot,double dip,23,0.06850598404829987,2
+12,14,Video Killed the Gene-io Star,locker love,13,0.05644353352436206,2
+12,15,Ancient Misbehavin',coins and,7,0.03174024879897892,2
+12,16,Interview with a Pop-pop-pire,glam eridoo,15,0.059448246514745985,2
+12,17,The Spider House Rules,a spider,5,0.019625934707289915,2
+12,18,Clear and Present Ginger,the limo,6,0.022776925642657247,2
+12,19,A-Sprout a Boy,meow meow,31,0.08946619347106816,2
+12,20,Sauce Side Story,floppy floppy,16,0.06358748366509032,2
+12,21,Grade Runner,butt erd,7,0.04629091712830298,2
+12,22,Some Like It Bot Part 2: Judge-bot Day,or weird,7,0.03177268166743982,2
+13,1,"To Bob, or Not to Bob",avenge me,11,0.050598654797959164,2
+13,2,The Reeky Lake Show,the lake,11,0.03856862882432573,2
+13,3,What About Job?,cold war,4,0.01871518871760522,2
+13,4,Comet-y of Errors,kettle corn,16,0.06064167039139322,2
+13,5,So You Stink You Can Dance,scoop it,16,0.06187006344456121,2
+13,6,Apple Gore-chard!,the harvest,19,0.07919221776139501,2
+13,7,Ready Player Gene,menu tower,8,0.03408837944992379,2
+13,8,Putts-giving,mini golf,28,0.09408786106592992,2
+13,9,Show Mama from the Grave,na na,17,0.053587078845275395,2
+13,10,The Plight Before Christmas,the library,18,0.044814307891544794,2
+13,11,Cheaty Cheaty Bang Bang,tell on,10,0.03458241393470529,2
+13,12,Oh Row You Didn't,can't quit,8,0.029481841686420575,2
+13,13,Stop! Or My Mom Will Sleuth!,mash missile,22,0.08019774057728729,2
+13,14,These Boots Are Made for Stalking,wafty wafty,29,0.11525231414297621,2
+13,15,The Show (And Tell) Must Go On,show and,11,0.03842519516814696,2
+13,16,What a (April) Fool Believes,april fool's,30,0.13602963770990967,2
+13,17,Crows Encounters of the Bird Kind,lightning sash,11,0.04558272447428304,2
+13,18,Gift Card or Buy Trying,sewing machine,11,0.04638831017927774,2
+13,19,Crab-solutely Fabulous,butt noodles,22,0.09866143339617724,2
+13,20,Radio No You Didn't,mr miller,14,0.059521802870245555,2
+13,21,Mother Author Laser Pointer,snail and,25,0.09766111438586625,2
+13,22,Amelia,mother's day,11,0.03777440215736786,2
+14,1,Fight at the Not Okay Chore-ral,married sheriffs,12,0.05511000238255522,2
+14,2,The Amazing Rudy,night to,6,0.028374142432306508,2
+14,3,The Pickleorette,tea party,10,0.043221492434620354,2
+14,4,Running Down a Gene,the cricket,12,0.054715105868667485,2
+14,5,Bully-ieve It or Not,the ketchup,12,0.03832766929208567,2
+14,6,Escape from Which Island?,ring a,9,0.035867522427477226,2
+14,7,The (Raccoon) King and I,little king,13,0.04752222757542068,2
+14,8,"Wharf, Me Worry?",pop pop,17,0.048914023198883744,2
+14,9,Fraud of the Dead: Docu-pocalypse,at archery,12,0.05314939904953315,2
+14,10,The Nightmare 2 Days Before Christmas,the tree,19,0.04868401086903367,2
+14,11,Mission Impossi-Bob,beef beef,16,0.05179737928852184,2
+14,12,Jade in the Shade,flappy bappies,20,0.0985688080479724,2
+14,13,Butt Sweat and Fears,upper butt,8,0.02761975619768039,2
+14,14,The Big Stieblitzki,and paul,6,0.029827332018683317,2
+14,15,The Right Tough Stuff,the gayle,12,0.04445159959317359,2
+14,16,To Catch a Beef,the pickle,12,0.03950582524808831,2
+15,1,The Tina Table: The Tables Have Tina-Ed,tina table,11,0.051174106599073246,2
+15,2,Saving Favorite Drive-In,drive in,11,0.04933071669808862,2
+15,3,Colon-ly the Dronely,le lys,9,0.04754762890063171,2
+15,4,For Whom the Doll Toes,mr sweater,14,0.058098455410304894,2
+15,5,Don't Stop Be-Cheesin,big cheese,17,0.07019207765607956,2
+15,6,Hope N' Mic Night,open mic,23,0.08652848508342809,2
+15,7,Boogie Days,squirt squirt,23,0.10503787734809053,2
+15,8,"They Slug Horses, Don't They?",spoon spoon,25,0.1516644000949999,2
+15,9,Dog Christmas Day After Afternoon,the puppy,8,0.031661908763439925,2
+15,10,Advice Things Are Ad-nice,miss am,34,0.14191896750580518,2
+15,11,Mr. Fischoeder's Opus,poof poof,11,0.059317632037155524,2
+15,12,Like a Candle in the Gym,family walk,13,0.06325320366918738,2
+15,13,Snackface,money money,9,0.036155869994609145,2
+15,14,The Place Beyond the Pinecones,pine cone,15,0.08244022669271397,2
+15,15,The Lost City of Atlantic,the mermaid,13,0.04446937248037557,2
+15,16,The Shell Game,the tortoise,14,0.08310354709714801,2
+15,17,Wild Steal-ions,horse book,8,0.03805214450224051,2
+15,18,"Don't Worry, Be Hoopy",free throw,11,0.04392979443755869,2
+15,19,The Dead Bo-ats Society,saturday morning,6,0.0297498584290244,2
+15,20,Dad-urday Kite Fever,the kite,11,0.048235317935267356,2
+15,21,Mr. Safebody,bah bah,12,0.038102882690276285,2
+15,22,Insomnibob,the night,16,0.0470597677534166,2
+16,1,Grand Pre-Pre-Pre-Opening,and fear,9,0.04139889938014841,2
+16,2,'Til Death Do Us Art,performance art,5,0.027244756173107502,2
+16,3,The Twinnening,the mask,18,0.07451201497244286,2
+16,4,The Skids in the Hall,sock racing,11,0.05375027749441909,2
+16,5,The Secret Guardin',butt flap,12,0.05524290431756139,2
+16,6,Get Her to the Zeke,super rat,17,0.07426118360715664,2
+16,7,Tube for Tina,tube top,27,0.11245446486171222,2
+16,8,Les Lizárdables,the lizard,9,0.03942846397149283,2
+16,9,It's a Stunterful Life,mistle dough,9,0.04750380620118413,2
+16,10,Heist Things Are Heist,the trophy,9,0.03960079117416544,2

@@ -5,7 +5,7 @@ account: viztoy
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 16624420
-bundleId: 11558838
+bundleId: 11569170
 url: https://viztoy.shinyapps.io/bobs_burger/
 version: 1
 asMultiple: FALSE
