@@ -1,4 +1,4 @@
-options(shiny.minified = FALSE) # TRUE for production, FALSE for development (makes it easier to debug)
+options(shiny.minified = TRUE) # TRUE for production, FALSE for development (makes it easier to debug)
 library(shiny)
 library(ggplot2)
 library(dplyr)
