@@ -352,6 +352,21 @@ server <- function(input, output, session) {
           )
         }
       },
+      # Most unique bigram in episode
+      {
+        unique_bigram <- ngrams |>
+          filter(season == ep$season, episode == ep$episode, n_gram == 2)
+        if (nrow(unique_bigram) > 0) {
+          p(
+            strong("Most Unique Phrase in Episode: "),
+            span(
+              unique_bigram$ngram,
+              style = "font-size: 1.2em; font-weight: bold; color: #2E86AB;"
+            ),
+            paste0(" (", unique_bigram$occurrences, " times)")
+          )
+        }
+      },
       # Word count display (only when word_count mode is selected)
       if (input$rating_source == "word_count") {
         word_count_data <- word_counts() |>

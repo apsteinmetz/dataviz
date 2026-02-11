@@ -25,6 +25,9 @@ find_unique_ngrams <- function(
 
   load(rdata_path)
 
+  # Define stopwords to exclude (articles and common words)
+  stopwords <- c("a", "an", "the", "any", "some")
+
   # Create episode identifier
   episode_text <- transcript_data |>
     filter(!is.na(dialogue)) |>
@@ -36,6 +39,25 @@ find_unique_ngrams <- function(
   ngrams <- episode_text |>
     unnest_tokens(ngram, text, token = "ngrams", n = ng) |>
     filter(!is.na(ngram))
+
+  # Remove n-grams that contain stopwords
+
+  if (ng == 1) {
+    # For unigrams, just filter out the stopwords directly
+    ngrams <- ngrams |>
+      filter(!ngram %in% stopwords)
+  } else {
+    # For n-grams, remove any that start or end with stopwords
+    stopwords_pattern <- paste0(
+      "^(",
+      paste(stopwords, collapse = "|"),
+      ")\\b|\\b(",
+      paste(stopwords, collapse = "|"),
+      ")$"
+    )
+    ngrams <- ngrams |>
+      filter(!str_detect(ngram, stopwords_pattern))
+  }
 
   # Count n-grams per episode
   ngram_counts <- ngrams |>
