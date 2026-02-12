@@ -1,11 +1,8 @@
 # scripts/find_unique_ngrams.R
 # Find most unique n-gram per episode using tf-idf
 
-library(dplyr)
-library(tidyr)
+library(tidyverse)
 library(tidytext)
-library(stringr)
-library(readr)
 
 #' Find the most unique n-gram for each episode using tf-idf
 #'
@@ -26,7 +23,29 @@ find_unique_ngrams <- function(
   load(rdata_path)
 
   # Define stopwords to exclude (articles and common words)
-  stopwords <- c("a", "an", "the", "any", "some")
+  stopwords <- c(
+    "a",
+    "an",
+    "the",
+    "any",
+    "some",
+    "to",
+    "and",
+    "or",
+    "of",
+    "but",
+    "if",
+    "is",
+    "are",
+    "was",
+    "were",
+    "in",
+    "on",
+    "at",
+    "by",
+    "for",
+    "with"
+  )
 
   # Create episode identifier
   episode_text <- transcript_data |>
@@ -86,9 +105,63 @@ find_unique_ngrams <- function(
 }
 
 # Main execution
-ngrams <- 1:2
-result <- map(ngrams, find_unique_ngrams) |>
-  bind_rows()
+# Get unigrams
+result_1 <- find_unique_ngrams(ng = 1)
+
+# Get bigrams and trigrams
+result_2 <- find_unique_ngrams(ng = 2)
+result_3 <- find_unique_ngrams(ng = 3)
+
+# Define stopwords for checking bigram endings
+stopwords <- c(
+  "a",
+  "an",
+  "the",
+  "any",
+  "some",
+  "to",
+  "and",
+  "or",
+  "but",
+  "if",
+  "is",
+  "are",
+  "was",
+  "were",
+  "in",
+  "on",
+  "at",
+  "by",
+  "for",
+  "with"
+)
+
+# Check which bigrams end with a stopword
+result_2 <- result_2 |>
+  mutate(
+    last_word = str_extract(ngram, "\\w+$"),
+    ends_with_stopword = last_word %in% stopwords
+  )
+
+# For episodes where bigram ends with stopword, use trigram instead
+episodes_needing_trigram <- result_2 |>
+  filter(ends_with_stopword) |>
+  select(season, episode)
+
+# Replace those episodes with trigrams
+result_2_final <- result_2 |>
+  filter(!ends_with_stopword) |>
+  select(-last_word, -ends_with_stopword)
+
+result_3_replacements <- result_3 |>
+  semi_join(episodes_needing_trigram, by = c("season", "episode"))
+
+# Combine: bigrams (where valid) + trigrams (where bigram ended with stopword)
+result_phrases <- bind_rows(result_2_final, result_3_replacements) |>
+  arrange(season, episode)
+
+# Combine unigrams and phrases
+result <- bind_rows(result_1, result_phrases)
 
 # Save to CSV
 output_file <- paste0("www/most_unique_words.csv")
