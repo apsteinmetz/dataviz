@@ -23,8 +23,42 @@ if (REFRESH) {
   hm_issue_filenames <- read_csv("hm_issue_filenames.csv")
 }
 
+resolve_cache_dir <- function(preferred) {
+  ok <- tryCatch({
+    if (!dir.exists(preferred)) dir.create(preferred, recursive = TRUE)
+    probe <- file.path(preferred, paste0(".write_test_", Sys.getpid()))
+    writeLines("ok", probe)
+    unlink(probe)
+    TRUE
+  }, error = function(e) FALSE, warning = function(w) FALSE)
+  if (ok) return(preferred)
+  fallback <- file.path(tempdir(), "comic_cache")
+  message(
+    "Cache directory '", preferred, "' is not writable; ",
+    "falling back to '", fallback, "'. Cache will not persist across restarts."
+  )
+  dir.create(fallback, recursive = TRUE, showWarnings = FALSE)
+  fallback
+}
+
+CACHE_DIR <- resolve_cache_dir(tools::R_user_dir("heavy_metal_mag", which = "cache"))
+
+cache_size_str <- function(cache_dir = CACHE_DIR) {
+  if (!dir.exists(cache_dir)) return("0 MB")
+  files <- list.files(cache_dir, recursive = TRUE, full.names = TRUE)
+  total_bytes <- sum(file.size(files), na.rm = TRUE)
+  paste(format(round(total_bytes / 1024^2, 1), nsmall = 1), "MB")
+}
+
+clear_cache <- function(cache_dir = CACHE_DIR) {
+  if (dir.exists(cache_dir)) {
+    unlink(list.files(cache_dir, full.names = TRUE), recursive = TRUE, force = TRUE)
+  }
+  invisible(TRUE)
+}
+
 extract_comic <- function(filename) {
-  cache_dir <- file.path(tempdir(), "comic_cache")
+  cache_dir <- CACHE_DIR
   shiny::withProgress(message = "Searching, downloading, and extracting", value = 0, {
     if (!dir.exists(cache_dir)) dir.create(cache_dir, recursive = TRUE)
     incProgress(0.1, detail = "Checking cache")
@@ -34,22 +68,26 @@ extract_comic <- function(filename) {
       return(cached_path)
     }
     ext <- tolower(tools::file_ext(filename))
-    temp_file <- tempfile("comic_", fileext = paste0(".", ext))
-    incProgress(0.2, detail = "Searching listing")
-    matching_file <- hm_issue_filenames %>% filter(file_name == filename)
-    if (nrow(matching_file) == 0) {
-      incProgress(1, detail = "File not found")
-      stop("File not found in Google Drive listing")
+    archive_file <- file.path(cache_dir, filename)
+    if (file.exists(archive_file)) {
+      incProgress(0.3, detail = "Using cached archive")
+    } else {
+      incProgress(0.2, detail = "Searching listing")
+      matching_file <- hm_issue_filenames %>% filter(file_name == filename)
+      if (nrow(matching_file) == 0) {
+        incProgress(1, detail = "File not found")
+        stop("File not found in Google Drive listing")
+      }
+      incProgress(0.3, detail = "Downloading from Google Drive")
+      drive_download(as_id(matching_file$drive_id[1]), path = archive_file, overwrite = TRUE)
     }
-    incProgress(0.3, detail = "Downloading from Google Drive")
-    drive_download(as_id(matching_file$drive_id[1]), path = temp_file, overwrite = TRUE)
     out <- cached_path
     dir.create(out, recursive = TRUE)
     incProgress(0.6, detail = "Extracting archive")
     if (ext == "cbz") {
-      unzip(temp_file, exdir = out)
+      unzip(archive_file, exdir = out)
     } else if (ext == "cbr") {
-      archive::archive_extract(temp_file, dir = out)
+      archive::archive_extract(archive_file, dir = out)
     } else {
       incProgress(1, detail = "Unsupported file")
       stop("Unsupported file extension. Expected .cbz or .cbr")
@@ -146,16 +184,26 @@ ui <- page_sidebar(
     selectizeInput("issue", "Issue", choices = NULL),
     textInput("author", "Author (includes partial match)"),
     textInput("title", "Title (includes partial match)"),
+    tags$p(
+      class = "text-muted",
+      tags$small("When a new article is selected, if the image is not the first page of the article, adjust the offset (usually backwards) to reach the first article page.")
+    ),
     sliderInput("offset", "Page offset", min = -10, max = 10, value = 0, step = 1),
-    actionButton("reset_filters", "Reset all filters")
+    actionButton("reset_filters", "Reset all filters"),
+    tags$hr(),
+    tags$strong("Admin"),
+    tags$p(textOutput("cache_size", inline = TRUE), "cached"),
+    tags$p(tags$small(class = "text-muted", textOutput("cache_path", inline = TRUE))),
+    actionButton("clear_cache", "Clear comic cache", icon = icon("trash"), class = "btn-outline-danger")
   ),
   card(
+    full_screen = TRUE,
     card_header("Table"),
     card_body(DTOutput("table"))
   ),
   card(
-    card_header("Image Carousel"),
-    card_body(slickROutput("carousel", height = "70vh"))
+    card_header(textOutput("carousel_title", inline = TRUE)),
+    card_body(slickROutput("carousel", height = "50vh"))
   )
 )
 
@@ -185,6 +233,36 @@ server <- function(input, output, session) {
     dat
   })
   
+  cache_refresh <- reactiveVal(0)
+  
+  output$cache_size <- renderText({
+    cache_refresh()
+    cache_size_str()
+  })
+  
+  output$cache_path <- renderText({
+    persistent <- !startsWith(normalizePath(CACHE_DIR, mustWork = FALSE), normalizePath(tempdir(), mustWork = FALSE))
+    paste0(CACHE_DIR, if (persistent) " (persistent)" else " (temporary - will not survive restart)")
+  })
+  
+  observeEvent(input$clear_cache, {
+    showModal(modalDialog(
+      title = "Clear comic cache?",
+      paste0("This will delete all downloaded and extracted comic files (", cache_size_str(), ") from the cache. They will be re-downloaded on next use."),
+      footer = tagList(
+        modalButton("Cancel"),
+        actionButton("confirm_clear_cache", "Clear cache", class = "btn-danger")
+      )
+    ))
+  })
+  
+  observeEvent(input$confirm_clear_cache, {
+    clear_cache()
+    cache_refresh(cache_refresh() + 1)
+    removeModal()
+    showNotification("Comic cache cleared.", type = "message")
+  })
+  
   observeEvent(input$reset_filters, {
     updateSelectizeInput(session, "year",   choices = all_choices$year,   selected = "", server = TRUE)
     updateSelectizeInput(session, "month",  choices = all_choices$month,  selected = "", server = TRUE)
@@ -204,6 +282,12 @@ server <- function(input, output, session) {
   observeEvent(input$table_rows_selected, {
     row <- input$table_rows_selected
     if (length(row) == 1) selected_row(filtered()[row, ])
+  })
+  
+  output$carousel_title <- renderText({
+    sr <- selected_row()
+    title <- if (!is.null(sr)) sr$title[1] else NA
+    if (is.na(title) || title == "") "Image Carousel" else title
   })
   
   gdrive_match <- reactive({
