@@ -86,6 +86,59 @@ toc_data <- toc_data %>%
 
 ui <- page_sidebar(
   theme = bs_theme(),
+  tags$head(
+    tags$style(HTML("
+      #carousel img { cursor: pointer; }
+      .carousel-fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        z-index: 9999;
+        background: #000;
+        margin: 0 !important;
+        border-radius: 0 !important;
+      }
+      .carousel-fullscreen .card-body {
+        height: 100vh !important;
+        display: flex;
+        align-items: center;
+      }
+      .carousel-fullscreen #carousel {
+        width: 100%;
+        height: 100%;
+      }
+      .carousel-fullscreen .slick-slide img {
+        max-height: 96vh;
+        width: auto;
+        margin: 0 auto;
+        object-fit: contain;
+      }
+    ")),
+    tags$script(HTML("
+      $(document).on('click', '#carousel img', function() {
+        var $card = $(this).closest('.card');
+        $card.toggleClass('carousel-fullscreen');
+        setTimeout(function() { $(window).trigger('resize'); }, 300);
+      });
+      $(document).on('keydown', function(e) {
+        var $fs = $('.carousel-fullscreen');
+        if ($fs.length === 0) return;
+        var $slider = $fs.find('.slick-slider');
+        if (e.key === 'ArrowLeft') {
+          $slider.slick('slickPrev');
+        } else if (e.key === 'ArrowRight') {
+          $slider.slick('slickNext');
+        } else if (e.key === 'Escape') {
+          $fs.removeClass('carousel-fullscreen');
+        }
+      });
+    "))
+  ),
   sidebar = sidebar(
     selectizeInput("year", "Year", choices = NULL),
     selectizeInput("month", "Month", choices = NULL),
